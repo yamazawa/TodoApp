@@ -19,14 +19,14 @@ public partial class MainViewModel : ObservableObject
     public IReadOnlyList<TodoStatus> StatusOptions { get; } = Enum.GetValues<TodoStatus>();
 
     [RelayCommand]
-    private void AddChildTodo() => SelectedTodo.ChildTodoList.Add(new TodoItem());
+    private void AddChildTodo() => SelectedTodo.ChildTodoList.Add(new TodoItem { IsEditing = true });
 
     [RelayCommand]
     private void DeleteChildTodo(TodoItem? item) =>
         DeleteWithConfirm(item, SelectedTodo.ChildTodoList, Strings.ConfirmDelete_ChildTodoMessage);
 
     [RelayCommand]
-    private void AddMemo() => SelectedTodo.MemoList.Add(new MemoItem());
+    private void AddMemo() => SelectedTodo.MemoList.Add(new MemoItem { IsEditing = true });
 
     [RelayCommand]
     private void DeleteMemo(MemoItem? item) =>
