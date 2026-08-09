@@ -7,11 +7,10 @@ using TodoApp.Models;
 namespace TodoApp.Services;
 
 /// <summary>
-/// NodeSyncTaskをキューで受け取り、バックグラウンドでファイルへ反映するサービス。
-/// 変更のあったフォルダの直下だけを書き直すため、
-/// 無関係な深い枝を巻き込まない(TodoFileWriterの全書き直しより軽い)。
-/// フォルダの削除+再作成ではなくリネームを使うことで、
-/// 子孫を含むサブツリーを保ったまま名前変更する。
+/// NodeSyncTaskをキューで受け取り、バックグラウンドでファイルへ反映するサービス
+///
+/// フォルダのリネームを使うことで、子孫を含むサブツリーを保って名前変更する。
+/// 変更のあったフォルダの直下だけを書き直すので、無関係な深い枝を巻き込まない。
 /// </summary>
 public class TodoCommandFileService
 {
@@ -27,7 +26,8 @@ public class TodoCommandFileService
     public void Enqueue(NodeSyncTask task) => _channel.Writer.TryWrite(task);
 
     /// <summary>
-    /// キューに積まれた書き込みを全て終えるまで待つ。
+    /// キューに積まれた書き込みを全て終えるまで待つ
+    ///
     /// アプリ終了時に、これ以上Enqueueしないことを確定させてから呼ぶ。
     /// </summary>
     public Task FlushAsync()

@@ -3,7 +3,8 @@ using System.Windows;
 namespace TodoApp.Styles;
 
 /// <summary>
-/// View全体で使うレイアウト関連の定数値。
+/// View全体で使うレイアウト関連の定数値
+///
 /// サイズ・余白を変更する際はここを直す。
 /// </summary>
 public static class LayoutConstants

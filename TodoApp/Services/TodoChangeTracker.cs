@@ -6,9 +6,9 @@ using TodoApp.Models;
 namespace TodoApp.Services;
 
 /// <summary>
-/// TODOツリーの変更を監視し、変更があったTodoItemを追跡する。
-/// 変更のあった項目を定期的にDrainしてNodeSyncTaskへ変換し、
-/// TodoCommandFileServiceへ渡す想定。
+/// TODOツリーの変更を監視し、変更があったTodoItemを追跡する
+///
+/// 変更のあった項目を定期的にDrainし、NodeSyncTaskへ変換してTodoCommandFileServiceへ渡す想定。
 /// </summary>
 public class TodoChangeTracker
 {
@@ -22,12 +22,15 @@ public class TodoChangeTracker
     }
 
     /// <summary>
-    /// ツリー全体の監視を開始する。ルート自身も初回同期対象としてdirty化する。
+    /// ツリー全体の監視を開始する
+    ///
+    /// ルート自身も初回同期対象としてdirty化する。
     /// </summary>
     public void Attach(TodoItem root) => AttachNode(root, parent: null);
 
     /// <summary>
-    /// dirtyな項目を取り出し、NodeSyncTaskへ変換して返す。
+    /// dirtyな項目を取り出し、NodeSyncTaskへ変換して返す
+    ///
     /// 親→子の順で処理されるよう、木の深さ順に並べる。
     /// </summary>
     public IReadOnlyList<NodeSyncTask> DrainSyncTasks()

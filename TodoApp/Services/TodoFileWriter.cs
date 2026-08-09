@@ -5,7 +5,8 @@ using TodoApp.Models;
 namespace TodoApp.Services;
 
 /// <summary>
-/// TODOツリーをC.ファイル設計のフォルダ構成へ丸ごと書き出すサービス。
+/// TODOツリーをC.ファイル設計のフォルダ構成へ丸ごと書き出すサービス
+///
 /// 保存のたびにフォルダの中身を全て書き直す(差分更新はしない)。
 /// 巨大な木では時間が掛かりうるため、Export用途として使う。
 /// 通常の自動保存はTodoCommandFileService(差分更新)を使う。
@@ -13,7 +14,9 @@ namespace TodoApp.Services;
 public class TodoFileWriter
 {
     /// <summary>
-    /// ルートTODOを保存する。フォルダ名が変わっていればリネームする。
+    /// ルートTODOを保存する
+    ///
+    /// フォルダ名が変わっていればリネームする。
     /// </summary>
     public void SaveRoot(TodoItem root, string parentDir)
     {
