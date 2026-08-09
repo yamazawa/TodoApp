@@ -107,6 +107,15 @@ namespace TodoApp.Resources {
         }
         
         /// <summary>
+        ///   編集 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_Edit {
+            get {
+                return ResourceManager.GetString("Menu_Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   完了 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Status_Done {
@@ -133,15 +142,6 @@ namespace TodoApp.Resources {
             }
         }
         
-        /// <summary>
-        ///   編集 に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string Menu_Edit {
-            get {
-                return ResourceManager.GetString("Menu_Edit", resourceCulture);
-            }
-        }
-
         /// <summary>
         ///   子TODO に類似しているローカライズされた文字列を検索します。
         /// </summary>
