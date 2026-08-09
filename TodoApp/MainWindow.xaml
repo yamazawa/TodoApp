@@ -18,17 +18,58 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
-        <!-- 子TODO/メモ情報リストの共通アイテムテンプレート -->
+        <!-- 子TODOリストのアイテムテンプレート -->
         <!-- 通常はテキスト表示、右クリック「編集」でTextBoxに切り替える -->
-        <DataTemplate x:Key="EditableListItemTemplate">
+        <DataTemplate x:Key="ChildTodoItemTemplate">
             <Grid>
                 <TextBlock x:Name="DisplayText"
                            Text="{Binding DisplayTitle}"
-                           Padding="{x:Static styles:LayoutConstants.ControlPadding}">
+                           Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+                           Tag="{Binding DataContext.ConvertChildTodoToMemoCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                     <TextBlock.ContextMenu>
                         <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                             <MenuItem Header="{x:Static resx:Strings.Menu_Edit}"
                                       Command="{Binding StartEditCommand}" />
+                            <MenuItem Header="{x:Static resx:Strings.Menu_ConvertToMemo}"
+                                      Command="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        </ContextMenu>
+                    </TextBlock.ContextMenu>
+                </TextBlock>
+                <TextBox x:Name="EditBox"
+                         Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+                         HorizontalAlignment="Stretch"
+                         BorderThickness="0" Background="Transparent"
+                         Visibility="Collapsed"
+                         behaviors:FocusBehavior.IsFocused="{Binding IsEditing}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="LostFocus">
+                            <i:InvokeCommandAction Command="{Binding EndEditCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBox>
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                    <Setter TargetName="DisplayText" Property="Visibility" Value="Collapsed" />
+                    <Setter TargetName="EditBox" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- メモ情報リストのアイテムテンプレート -->
+        <DataTemplate x:Key="MemoItemTemplate">
+            <Grid>
+                <TextBlock x:Name="DisplayText"
+                           Text="{Binding DisplayTitle}"
+                           Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+                           Tag="{Binding DataContext.ConvertMemoToChildTodoCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                    <TextBlock.ContextMenu>
+                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="{x:Static resx:Strings.Menu_Edit}"
+                                      Command="{Binding StartEditCommand}" />
+                            <MenuItem Header="{x:Static resx:Strings.Menu_ConvertToChildTodo}"
+                                      Command="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         </ContextMenu>
                     </TextBlock.ContextMenu>
                 </TextBlock>
@@ -96,7 +137,7 @@
                                  ItemsSource="{Binding SelectedTodo.ChildTodoList}"
                                  SelectedItem="{Binding SelectedChildTodo}"
                                  ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
-                                 ItemTemplate="{StaticResource EditableListItemTemplate}">
+                                 ItemTemplate="{StaticResource ChildTodoItemTemplate}">
                             <ListBox.InputBindings>
                                 <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveChildTodoUpCommand}" />
                                 <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveChildTodoDownCommand}" />
@@ -120,7 +161,7 @@
                                  ItemsSource="{Binding SelectedTodo.MemoList}"
                                  SelectedItem="{Binding SelectedMemo}"
                                  ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
-                                 ItemTemplate="{StaticResource EditableListItemTemplate}">
+                                 ItemTemplate="{StaticResource MemoItemTemplate}">
                             <ListBox.InputBindings>
                                 <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveMemoUpCommand}" />
                                 <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveMemoDownCommand}" />
