@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -99,6 +100,56 @@ public partial class MainViewModel : ObservableObject
 
     [RelayCommand]
     private void MoveMemoDown() => Move(SelectedTodo.MemoList, SelectedMemo, 1);
+
+    // 子TODOをメモ情報へ変換する。孫以下も再帰的に平坦化して全てメモにする。
+    [RelayCommand]
+    private void ConvertChildTodoToMemo()
+    {
+        if (SelectedChildTodo is not { } item)
+        {
+            return;
+        }
+
+        var newMemos = FlattenToMemos(item);
+        SelectedTodo.ChildTodoList.Remove(item);
+        foreach (var memo in newMemos)
+        {
+            SelectedTodo.MemoList.Add(memo);
+        }
+
+        SelectedTabIndex = 1;
+        SelectedMemo = newMemos[0];
+    }
+
+    // メモ情報を子TODOへ変換する。
+    [RelayCommand]
+    private void ConvertMemoToChildTodo()
+    {
+        if (SelectedMemo is not { } memo)
+        {
+            return;
+        }
+
+        var newItem = new TodoItem { Title = memo.Title, Body = memo.Body };
+        SelectedTodo.MemoList.Remove(memo);
+        SelectedTodo.ChildTodoList.Add(newItem);
+
+        SelectedTabIndex = 0;
+        SelectedChildTodo = newItem;
+    }
+
+    // 自分自身→自分のメモ情報→各子TODO(再帰的に平坦化)の順でメモ化する。
+    private static List<MemoItem> FlattenToMemos(TodoItem item)
+    {
+        var result = new List<MemoItem> { new() { Title = item.Title, Body = item.Body } };
+        result.AddRange(item.MemoList.Select(memo => new MemoItem { Title = memo.Title, Body = memo.Body }));
+        foreach (var child in item.ChildTodoList)
+        {
+            result.AddRange(FlattenToMemos(child));
+        }
+
+        return result;
+    }
 
     // 子TODOは自動ソート優先のため、ステータスが同じ項目同士でしか入れ替えない。
     private void MoveChildTodo(int delta)
