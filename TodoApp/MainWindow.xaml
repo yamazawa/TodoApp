@@ -7,7 +7,84 @@
         mc:Ignorable="d"
         Title="TODOアプリ" Height="600" Width="480"
         MinHeight="400" MinWidth="360">
-    <Grid>
-        <!-- タスク2以降でA/B/C仕様に沿って実装する -->
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 上半分 : タイトル/ステータス/本文 -->
+        <Grid Grid.Row="0" Margin="0,0,0,8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBox Grid.Row="0" Margin="0,0,0,4" Padding="4"
+                     Text="{Binding SelectedTodo.Title, UpdateSourceTrigger=PropertyChanged}" />
+            <ComboBox Grid.Row="1" Margin="0,0,0,4" MinWidth="100" HorizontalAlignment="Left"
+                      ItemsSource="{Binding StatusOptions}"
+                      SelectedItem="{Binding SelectedTodo.Status}" />
+            <TextBox Grid.Row="2" Padding="4"
+                     AcceptsReturn="True" TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     Text="{Binding SelectedTodo.Body, UpdateSourceTrigger=PropertyChanged}" />
+        </Grid>
+
+        <!-- 下半分 : 子TODO/メモ情報 -->
+        <TabControl Grid.Row="1">
+            <TabItem Header="子TODO">
+                <DockPanel Margin="4">
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,4,0,0">
+                        <Button Content="追加" Padding="8,2" Margin="0,0,4,0"
+                                Command="{Binding AddChildTodoCommand}" />
+                        <Button Content="削除" Padding="8,2"
+                                Command="{Binding DeleteChildTodoCommand}"
+                                CommandParameter="{Binding ElementName=ChildTodoListBox, Path=SelectedItem}" />
+                    </StackPanel>
+                    <ListBox x:Name="ChildTodoListBox"
+                             ItemsSource="{Binding SelectedTodo.ChildTodoList}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                         HorizontalAlignment="Stretch"
+                                         BorderThickness="0" Background="Transparent" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="メモ情報">
+                <DockPanel Margin="4">
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,4,0,0">
+                        <Button Content="追加" Padding="8,2" Margin="0,0,4,0"
+                                Command="{Binding AddMemoCommand}" />
+                        <Button Content="削除" Padding="8,2"
+                                Command="{Binding DeleteMemoCommand}"
+                                CommandParameter="{Binding ElementName=MemoListBox, Path=SelectedItem}" />
+                    </StackPanel>
+                    <ListBox x:Name="MemoListBox"
+                             ItemsSource="{Binding SelectedTodo.MemoList}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                         HorizontalAlignment="Stretch"
+                                         BorderThickness="0" Background="Transparent" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>
