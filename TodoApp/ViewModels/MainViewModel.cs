@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using TodoApp.Models;
 using TodoApp.Models.Enums;
 using TodoApp.Resources;
+using TodoApp.Services;
 
 namespace TodoApp.ViewModels;
 
@@ -13,8 +14,11 @@ namespace TodoApp.ViewModels;
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
+    private readonly TodoFileService _fileService;
+    private readonly string _rootParentDir;
+
     [ObservableProperty]
-    private TodoItem _selectedTodo = new();
+    private TodoItem _selectedTodo;
 
     [ObservableProperty]
     private TodoItem? _selectedChildTodo;
@@ -23,6 +27,19 @@ public partial class MainViewModel : ObservableObject
     private MemoItem? _selectedMemo;
 
     public IReadOnlyList<TodoStatus> StatusOptions { get; } = Enum.GetValues<TodoStatus>();
+
+    public MainViewModel(TodoFileService fileService, string rootParentDir)
+    {
+        _fileService = fileService;
+        _rootParentDir = rootParentDir;
+        _selectedTodo = fileService.LoadOrCreateRoot(rootParentDir);
+    }
+
+    /// <summary>
+    /// 現在の内容をファイルへ保存する。
+    /// 定期保存とアプリ終了時の両方から呼ばれる。
+    /// </summary>
+    public void Save() => _fileService.SaveRoot(SelectedTodo, _rootParentDir);
 
     [RelayCommand]
     private void AddChildTodo()
