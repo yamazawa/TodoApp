@@ -58,7 +58,12 @@ public class TodoChangeTracker
             .Select((child, index) => (child, index + 1, child.Title, child.Status))
             .ToList();
 
-        return new NodeSyncTask(item, parent, _rootParentDir, ordinal, item.Title, item.Status, item.Body, memos, children);
+        var saveInfo = new TodoSaveInfo(
+            item.SelectedTabIndex,
+            item.SelectedChildTodo is null ? null : item.ChildTodoList.IndexOf(item.SelectedChildTodo),
+            item.SelectedMemo is null ? null : item.MemoList.IndexOf(item.SelectedMemo));
+
+        return new NodeSyncTask(item, parent, _rootParentDir, ordinal, item.Title, item.Status, item.Body, memos, children, saveInfo);
     }
 
     private int Depth(TodoItem item)
@@ -95,7 +100,8 @@ public class TodoChangeTracker
     private void OnTodoPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (sender is TodoItem item &&
-            e.PropertyName is nameof(TodoItem.Title) or nameof(TodoItem.Body) or nameof(TodoItem.Status))
+            e.PropertyName is nameof(TodoItem.Title) or nameof(TodoItem.Body) or nameof(TodoItem.Status)
+                or nameof(TodoItem.SelectedTabIndex) or nameof(TodoItem.SelectedChildTodo) or nameof(TodoItem.SelectedMemo))
         {
             _dirtyNodes.Add(item);
         }

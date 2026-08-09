@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using TodoApp.Models;
 
 namespace TodoApp.Services;
@@ -45,6 +46,7 @@ public class TodoFileWriter
         }
 
         File.WriteAllText(Path.Combine(folderPath, TodoFileNaming.ReadmeFileName), todo.Body);
+        WriteSaveInfo(todo, folderPath);
 
         var ordinal = 1;
         foreach (var memo in todo.MemoList)
@@ -59,6 +61,17 @@ public class TodoFileWriter
             var childFolderName = TodoFileNaming.BuildTodoFolderName(ordinal++, child.Title, child.Status);
             SaveTodoContents(child, Path.Combine(folderPath, childFolderName));
         }
+    }
+
+    // ④保存情報(表示用情報)を書き出す。選択中の子/メモはインデックスで保存する。
+    private static void WriteSaveInfo(TodoItem todo, string folderPath)
+    {
+        var info = new TodoSaveInfo(
+            todo.SelectedTabIndex,
+            todo.SelectedChildTodo is null ? null : todo.ChildTodoList.IndexOf(todo.SelectedChildTodo),
+            todo.SelectedMemo is null ? null : todo.MemoList.IndexOf(todo.SelectedMemo));
+        var json = JsonSerializer.Serialize(info);
+        File.WriteAllText(Path.Combine(folderPath, TodoFileNaming.SaveInfoFileName), json);
     }
 
     private static void DeleteEntry(string path)

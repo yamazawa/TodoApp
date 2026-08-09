@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading.Channels;
 using TodoApp.Models;
 
@@ -58,6 +59,7 @@ public class TodoCommandFileService
         var selfPath = MoveOrCreate(task.Identity, parentPath, task.Ordinal, task.Title, task.Status);
 
         File.WriteAllText(Path.Combine(selfPath, TodoFileNaming.ReadmeFileName), task.Body);
+        File.WriteAllText(Path.Combine(selfPath, TodoFileNaming.SaveInfoFileName), JsonSerializer.Serialize(task.SaveInfo));
         SyncMemoFiles(selfPath, task.Memos);
         SyncChildFolders(selfPath, task.Children);
     }

@@ -13,6 +13,7 @@ namespace TodoApp.Services;
 public static class TodoFileNaming
 {
     public const string ReadmeFileName = "0_README.md";
+    public const string SaveInfoFileName = "_save.json";
     public const string NullTitlePlaceholder = "NULL";
     private static readonly char[] ForbiddenChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|'];
 
