@@ -65,6 +65,35 @@ public partial class MainViewModel : ObservableObject
     private void DeleteMemo() =>
         DeleteWithConfirm(SelectedMemo, SelectedTodo.MemoList, Strings.ConfirmDelete_MemoMessage);
 
+    [RelayCommand]
+    private void MoveChildTodoUp() => Move(SelectedTodo.ChildTodoList, SelectedChildTodo, -1);
+
+    [RelayCommand]
+    private void MoveChildTodoDown() => Move(SelectedTodo.ChildTodoList, SelectedChildTodo, 1);
+
+    [RelayCommand]
+    private void MoveMemoUp() => Move(SelectedTodo.MemoList, SelectedMemo, -1);
+
+    [RelayCommand]
+    private void MoveMemoDown() => Move(SelectedTodo.MemoList, SelectedMemo, 1);
+
+    private static void Move<T>(ObservableCollection<T> list, T? item, int delta)
+    {
+        if (item is null)
+        {
+            return;
+        }
+
+        var oldIndex = list.IndexOf(item);
+        var newIndex = oldIndex + delta;
+        if (oldIndex < 0 || newIndex < 0 || newIndex >= list.Count)
+        {
+            return;
+        }
+
+        list.Move(oldIndex, newIndex);
+    }
+
     private static void DeleteWithConfirm<T>(T? item, ObservableCollection<T> list, string message)
     {
         if (item is null)

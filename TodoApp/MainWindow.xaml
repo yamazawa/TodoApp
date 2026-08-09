@@ -108,7 +108,12 @@
                              ItemsSource="{Binding SelectedTodo.ChildTodoList}"
                              SelectedItem="{Binding SelectedChildTodo}"
                              ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
-                             ItemTemplate="{StaticResource EditableListItemTemplate}" />
+                             ItemTemplate="{StaticResource EditableListItemTemplate}">
+                        <ListBox.InputBindings>
+                            <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveChildTodoUpCommand}" />
+                            <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveChildTodoDownCommand}" />
+                        </ListBox.InputBindings>
+                    </ListBox>
                 </DockPanel>
             </TabItem>
             <TabItem Header="{x:Static resx:Strings.Tab_Memo}">
@@ -127,7 +132,12 @@
                              ItemsSource="{Binding SelectedTodo.MemoList}"
                              SelectedItem="{Binding SelectedMemo}"
                              ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
-                             ItemTemplate="{StaticResource EditableListItemTemplate}" />
+                             ItemTemplate="{StaticResource EditableListItemTemplate}">
+                        <ListBox.InputBindings>
+                            <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveMemoUpCommand}" />
+                            <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveMemoDownCommand}" />
+                        </ListBox.InputBindings>
+                    </ListBox>
                 </DockPanel>
             </TabItem>
         </TabControl>
