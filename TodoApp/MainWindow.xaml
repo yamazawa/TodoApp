@@ -102,11 +102,11 @@
                                 Command="{Binding AddChildTodoCommand}" />
                         <Button Content="{x:Static resx:Strings.Button_Delete}"
                                 Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
-                                Command="{Binding DeleteChildTodoCommand}"
-                                CommandParameter="{Binding ElementName=ChildTodoListBox, Path=SelectedItem}" />
+                                Command="{Binding DeleteChildTodoCommand}" />
                     </StackPanel>
                     <ListBox x:Name="ChildTodoListBox"
                              ItemsSource="{Binding SelectedTodo.ChildTodoList}"
+                             SelectedItem="{Binding SelectedChildTodo}"
                              ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
                              ItemTemplate="{StaticResource EditableListItemTemplate}" />
                 </DockPanel>
@@ -121,11 +121,11 @@
                                 Command="{Binding AddMemoCommand}" />
                         <Button Content="{x:Static resx:Strings.Button_Delete}"
                                 Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
-                                Command="{Binding DeleteMemoCommand}"
-                                CommandParameter="{Binding ElementName=MemoListBox, Path=SelectedItem}" />
+                                Command="{Binding DeleteMemoCommand}" />
                     </StackPanel>
                     <ListBox x:Name="MemoListBox"
                              ItemsSource="{Binding SelectedTodo.MemoList}"
+                             SelectedItem="{Binding SelectedMemo}"
                              ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
                              ItemTemplate="{StaticResource EditableListItemTemplate}" />
                 </DockPanel>

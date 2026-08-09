@@ -16,21 +16,37 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private TodoItem _selectedTodo = new();
 
+    [ObservableProperty]
+    private TodoItem? _selectedChildTodo;
+
+    [ObservableProperty]
+    private MemoItem? _selectedMemo;
+
     public IReadOnlyList<TodoStatus> StatusOptions { get; } = Enum.GetValues<TodoStatus>();
 
     [RelayCommand]
-    private void AddChildTodo() => SelectedTodo.ChildTodoList.Add(new TodoItem { IsEditing = true });
+    private void AddChildTodo()
+    {
+        var item = new TodoItem { IsEditing = true };
+        SelectedTodo.ChildTodoList.Add(item);
+        SelectedChildTodo = item;
+    }
 
     [RelayCommand]
-    private void DeleteChildTodo(TodoItem? item) =>
-        DeleteWithConfirm(item, SelectedTodo.ChildTodoList, Strings.ConfirmDelete_ChildTodoMessage);
+    private void DeleteChildTodo() =>
+        DeleteWithConfirm(SelectedChildTodo, SelectedTodo.ChildTodoList, Strings.ConfirmDelete_ChildTodoMessage);
 
     [RelayCommand]
-    private void AddMemo() => SelectedTodo.MemoList.Add(new MemoItem { IsEditing = true });
+    private void AddMemo()
+    {
+        var item = new MemoItem { IsEditing = true };
+        SelectedTodo.MemoList.Add(item);
+        SelectedMemo = item;
+    }
 
     [RelayCommand]
-    private void DeleteMemo(MemoItem? item) =>
-        DeleteWithConfirm(item, SelectedTodo.MemoList, Strings.ConfirmDelete_MemoMessage);
+    private void DeleteMemo() =>
+        DeleteWithConfirm(SelectedMemo, SelectedTodo.MemoList, Strings.ConfirmDelete_MemoMessage);
 
     private static void DeleteWithConfirm<T>(T? item, ObservableCollection<T> list, string message)
     {
