@@ -15,6 +15,42 @@
         MinWidth="{x:Static styles:LayoutConstants.WindowMinWidth}">
     <Window.Resources>
         <conv:TodoStatusToStringConverter x:Key="TodoStatusToStringConverter" />
+
+        <!-- 子TODO/メモ情報リストの共通アイテムテンプレート -->
+        <!-- 通常はテキスト表示、右クリック「編集」でTextBoxに切り替える -->
+        <DataTemplate x:Key="EditableListItemTemplate">
+            <Grid>
+                <TextBlock x:Name="DisplayText"
+                           Text="{Binding DisplayTitle}"
+                           Padding="{x:Static styles:LayoutConstants.ControlPadding}">
+                    <TextBlock.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="{x:Static resx:Strings.Menu_Edit}"
+                                      Click="EditMenuItem_Click"
+                                      CommandParameter="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        </ContextMenu>
+                    </TextBlock.ContextMenu>
+                </TextBlock>
+                <TextBox x:Name="EditBox"
+                         Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+                         HorizontalAlignment="Stretch"
+                         BorderThickness="0" Background="Transparent"
+                         Visibility="Collapsed"
+                         LostFocus="EditTextBox_LostFocus"
+                         IsVisibleChanged="EditTextBox_IsVisibleChanged" />
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                    <Setter TargetName="DisplayText" Property="Visibility" Value="Collapsed" />
+                    <Setter TargetName="EditBox" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <Style x:Key="StretchListBoxItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
     </Window.Resources>
     <Grid Margin="{x:Static styles:LayoutConstants.RootMargin}">
         <Grid.RowDefinitions>
@@ -64,20 +100,9 @@
                                 CommandParameter="{Binding ElementName=ChildTodoListBox, Path=SelectedItem}" />
                     </StackPanel>
                     <ListBox x:Name="ChildTodoListBox"
-                             ItemsSource="{Binding SelectedTodo.ChildTodoList}">
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                         HorizontalAlignment="Stretch"
-                                         BorderThickness="0" Background="Transparent" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                             ItemsSource="{Binding SelectedTodo.ChildTodoList}"
+                             ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
+                             ItemTemplate="{StaticResource EditableListItemTemplate}" />
                 </DockPanel>
             </TabItem>
             <TabItem Header="{x:Static resx:Strings.Tab_Memo}">
@@ -94,20 +119,9 @@
                                 CommandParameter="{Binding ElementName=MemoListBox, Path=SelectedItem}" />
                     </StackPanel>
                     <ListBox x:Name="MemoListBox"
-                             ItemsSource="{Binding SelectedTodo.MemoList}">
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                         HorizontalAlignment="Stretch"
-                                         BorderThickness="0" Background="Transparent" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                             ItemsSource="{Binding SelectedTodo.MemoList}"
+                             ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
+                             ItemTemplate="{StaticResource EditableListItemTemplate}" />
                 </DockPanel>
             </TabItem>
         </TabControl>

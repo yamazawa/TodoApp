@@ -92,4 +92,7 @@
   <data name="Status_Done" xml:space="preserve">
     <value>完了</value>
   </data>
+  <data name="Menu_Edit" xml:space="preserve">
+    <value>編集</value>
+  </data>
 </root>
