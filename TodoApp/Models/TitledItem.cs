@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace TodoApp.Models;
 
@@ -29,6 +30,12 @@ public abstract partial class TitledItem : ObservableObject
     partial void OnTitleChanged(string? value) => OnPropertyChanged(nameof(DisplayTitle));
 
     partial void OnBodyChanged(string value) => OnPropertyChanged(nameof(DisplayTitle));
+
+    [RelayCommand]
+    private void StartEdit() => IsEditing = true;
+
+    [RelayCommand]
+    private void EndEdit() => IsEditing = false;
 
     private static string FirstLineOf(string text)
     {

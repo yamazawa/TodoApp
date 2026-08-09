@@ -7,6 +7,8 @@
         xmlns:styles="clr-namespace:TodoApp.Styles"
         xmlns:resx="clr-namespace:TodoApp.Resources"
         xmlns:conv="clr-namespace:TodoApp.Converters"
+        xmlns:behaviors="clr-namespace:TodoApp.Behaviors"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="{x:Static resx:Strings.WindowTitle}"
         Height="{x:Static styles:LayoutConstants.WindowHeight}"
@@ -24,10 +26,9 @@
                            Text="{Binding DisplayTitle}"
                            Padding="{x:Static styles:LayoutConstants.ControlPadding}">
                     <TextBlock.ContextMenu>
-                        <ContextMenu>
+                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                             <MenuItem Header="{x:Static resx:Strings.Menu_Edit}"
-                                      Click="EditMenuItem_Click"
-                                      CommandParameter="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                      Command="{Binding StartEditCommand}" />
                         </ContextMenu>
                     </TextBlock.ContextMenu>
                 </TextBlock>
@@ -37,8 +38,13 @@
                          HorizontalAlignment="Stretch"
                          BorderThickness="0" Background="Transparent"
                          Visibility="Collapsed"
-                         LostFocus="EditTextBox_LostFocus"
-                         IsVisibleChanged="EditTextBox_IsVisibleChanged" />
+                         behaviors:FocusBehavior.IsFocused="{Binding IsEditing}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="LostFocus">
+                            <i:InvokeCommandAction Command="{Binding EndEditCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBox>
             </Grid>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding IsEditing}" Value="True">
