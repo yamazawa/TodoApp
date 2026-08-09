@@ -26,6 +26,14 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private MemoItem? _selectedMemo;
 
+    // 0:子TODOタブ、1:メモ情報タブ
+    [ObservableProperty]
+    private int _selectedTabIndex;
+
+    public bool IsChildTabSelected => SelectedTabIndex == 0;
+
+    public bool IsMemoTabSelected => SelectedTabIndex == 1;
+
     public IReadOnlyList<TodoStatus> StatusOptions { get; } = Enum.GetValues<TodoStatus>();
 
     public MainViewModel(TodoFileReader fileReader, TodoCommandFileService commandFileService, string rootParentDir)
@@ -48,6 +56,12 @@ public partial class MainViewModel : ObservableObject
         {
             _commandFileService.Enqueue(task);
         }
+    }
+
+    partial void OnSelectedTabIndexChanged(int value)
+    {
+        OnPropertyChanged(nameof(IsChildTabSelected));
+        OnPropertyChanged(nameof(IsMemoTabSelected));
     }
 
     [RelayCommand]
