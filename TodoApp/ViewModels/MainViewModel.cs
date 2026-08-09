@@ -21,15 +21,54 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private TodoItem _selectedTodo;
 
-    [ObservableProperty]
-    private TodoItem? _selectedChildTodo;
+    // 選択中タブ/子TODO/メモ情報は表示用情報としてTodoItem側で保持する。
+    // ここではSelectedTodoへの委譲プロパティとして公開する。
+    public TodoItem? SelectedChildTodo
+    {
+        get => SelectedTodo.SelectedChildTodo;
+        set
+        {
+            if (ReferenceEquals(SelectedTodo.SelectedChildTodo, value))
+            {
+                return;
+            }
 
-    [ObservableProperty]
-    private MemoItem? _selectedMemo;
+            SelectedTodo.SelectedChildTodo = value;
+            OnPropertyChanged();
+        }
+    }
 
-    // 0:子TODOタブ、1:メモ情報タブ
-    [ObservableProperty]
-    private int _selectedTabIndex;
+    public MemoItem? SelectedMemo
+    {
+        get => SelectedTodo.SelectedMemo;
+        set
+        {
+            if (ReferenceEquals(SelectedTodo.SelectedMemo, value))
+            {
+                return;
+            }
+
+            SelectedTodo.SelectedMemo = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int SelectedTabIndex
+    {
+        get => SelectedTodo.SelectedTabIndex;
+        set
+        {
+            if (SelectedTodo.SelectedTabIndex == value)
+            {
+                return;
+            }
+
+            SelectedTodo.SelectedTabIndex = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsChildTabSelected));
+            OnPropertyChanged(nameof(IsMemoTabSelected));
+        }
+    }
 
     public bool IsChildTabSelected => SelectedTabIndex == 0;
 
@@ -57,12 +96,6 @@ public partial class MainViewModel : ObservableObject
         {
             _commandFileService.Enqueue(task);
         }
-    }
-
-    partial void OnSelectedTabIndexChanged(int value)
-    {
-        OnPropertyChanged(nameof(IsChildTabSelected));
-        OnPropertyChanged(nameof(IsMemoTabSelected));
     }
 
     [RelayCommand]

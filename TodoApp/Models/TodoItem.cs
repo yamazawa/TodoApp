@@ -17,6 +17,17 @@ public partial class TodoItem : TitledItem
     [ObservableProperty]
     private TodoStatus _status = TodoStatus.NotStarted;
 
+    // 以下3つは表示用情報(④保存情報でTODO単位に保存する)。
+    // 0:子TODOタブ、1:メモ情報タブ
+    [ObservableProperty]
+    private int _selectedTabIndex;
+
+    [ObservableProperty]
+    private TodoItem? _selectedChildTodo;
+
+    [ObservableProperty]
+    private MemoItem? _selectedMemo;
+
     public ObservableCollection<MemoItem> MemoList { get; } = [];
 
     public ObservableCollection<TodoItem> ChildTodoList { get; } = [];
