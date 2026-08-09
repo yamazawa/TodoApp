@@ -4,10 +4,10 @@ using TodoApp.Models.Enums;
 namespace TodoApp.Services;
 
 /// <summary>
-/// TodoItem 1件分の同期指示(スナップショット)。
+/// TodoItem 1件分の同期指示(スナップショット)
+///
 /// UIスレッドで作成し、バックグラウンドの書き込みスレッドへ渡す。
-/// 生きているモデルオブジェクトへの参照は識別用のキーとしてのみ使い、
-/// バックグラウンド側でプロパティを読み直すことはしない。
+/// モデルの参照は識別キーとしてのみ使い、プロパティは読み直さない。
 /// </summary>
 public sealed record NodeSyncTask(
     TodoItem Identity,

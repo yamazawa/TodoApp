@@ -5,7 +5,9 @@ using TodoApp.Models.Enums;
 namespace TodoApp.Models;
 
 /// <summary>
-/// 1件のTODOを表すモデル。子TODO・メモ情報を持つ。
+/// 1件のTODOを表すモデル
+///
+/// 子TODO・メモ情報を持つ。
 /// </summary>
 public partial class TodoItem : TitledItem
 {

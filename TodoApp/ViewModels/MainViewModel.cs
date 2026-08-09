@@ -38,7 +38,8 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 変更のあった項目をキューへ積む。
+    /// 変更のあった項目をキューへ積む
+    ///
     /// 定期保存とアプリ終了時の両方から呼ばれる。
     /// </summary>
     public void EnqueuePendingChanges()

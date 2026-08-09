@@ -10,7 +10,8 @@ namespace TodoApp.Services;
 public class TodoFileReader
 {
     /// <summary>
-    /// 指定フォルダの親フォルダから、ルートTODOフォルダを1つ探して読み込む。
+    /// 指定フォルダの親フォルダから、ルートTODOフォルダを1つ探して読み込む
+    ///
     /// 見つからない場合は新規のTODOを作成する。
     /// </summary>
     public TodoItem LoadOrCreateRoot(string parentDir)

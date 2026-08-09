@@ -6,7 +6,8 @@ using TodoApp.Resources;
 namespace TodoApp.Services;
 
 /// <summary>
-/// TODO/メモ情報のファイル名・フォルダ名の変換ルール。
+/// TODO/メモ情報のファイル名・フォルダ名の変換ルール
+///
 /// C.ファイル設計に基づく。
 /// </summary>
 public static class TodoFileNaming
@@ -35,9 +36,9 @@ public static class TodoFileNaming
         $"{ordinal}_{SanitizeTitle(title)}.md";
 
     /// <summary>
-    /// TODOフォルダ名からタイトルとステータスを取り出す。
-    /// タイトルに「_」が含まれていても解析できるよう、
-    /// 末尾のステータス文字列から先に照合する。
+    /// TODOフォルダ名からタイトルとステータスを取り出す
+    ///
+    /// タイトルに「_」が含まれていても解析できるよう、末尾のステータス文字列から先に照合する。
     /// 解析できない場合はnullを返す。
     /// </summary>
     public static (string? Title, TodoStatus Status)? ParseTodoFolderName(string folderName)
@@ -62,7 +63,8 @@ public static class TodoFileNaming
     }
 
     /// <summary>
-    /// メモ情報ファイル名(拡張子なし)からタイトルを取り出す。
+    /// メモ情報ファイル名(拡張子なし)からタイトルを取り出す
+    ///
     /// 解析できない場合はnullを返す。
     /// </summary>
     public static string? ParseMemoFileName(string fileNameWithoutExtension)

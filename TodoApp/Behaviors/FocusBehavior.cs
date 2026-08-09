@@ -5,7 +5,8 @@ using System.Windows.Threading;
 namespace TodoApp.Behaviors;
 
 /// <summary>
-/// バインドした値がtrueになったら要素にフォーカスするビヘイビア。
+/// バインドした値がtrueになったら要素にフォーカスするビヘイビア
+///
 /// コードビハインドを使わずにフォーカス制御するための添付プロパティ。
 /// </summary>
 public static class FocusBehavior
