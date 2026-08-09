@@ -4,28 +4,45 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TodoApp"
+        xmlns:styles="clr-namespace:TodoApp.Styles"
+        xmlns:resx="clr-namespace:TodoApp.Resources"
+        xmlns:conv="clr-namespace:TodoApp.Converters"
         mc:Ignorable="d"
-        Title="TODOアプリ" Height="600" Width="480"
-        MinHeight="400" MinWidth="360">
-    <Grid Margin="12">
+        Title="{x:Static resx:Strings.WindowTitle}"
+        Height="{x:Static styles:LayoutConstants.WindowHeight}"
+        Width="{x:Static styles:LayoutConstants.WindowWidth}"
+        MinHeight="{x:Static styles:LayoutConstants.WindowMinHeight}"
+        MinWidth="{x:Static styles:LayoutConstants.WindowMinWidth}">
+    <Window.Resources>
+        <conv:TodoStatusToStringConverter x:Key="TodoStatusToStringConverter" />
+    </Window.Resources>
+    <Grid Margin="{x:Static styles:LayoutConstants.RootMargin}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!-- 上半分 : タイトル/ステータス/本文 -->
-        <Grid Grid.Row="0" Margin="0,0,0,8">
+        <Grid Grid.Row="0" Margin="{x:Static styles:LayoutConstants.SectionSpacing}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <TextBox Grid.Row="0" Margin="0,0,0,4" Padding="4"
+            <TextBox Grid.Row="0" Margin="{x:Static styles:LayoutConstants.FieldSpacing}"
+                     Padding="{x:Static styles:LayoutConstants.ControlPadding}"
                      Text="{Binding SelectedTodo.Title, UpdateSourceTrigger=PropertyChanged}" />
-            <ComboBox Grid.Row="1" Margin="0,0,0,4" MinWidth="100" HorizontalAlignment="Left"
+            <ComboBox Grid.Row="1" Margin="{x:Static styles:LayoutConstants.FieldSpacing}"
+                      MinWidth="100" HorizontalAlignment="Left"
                       ItemsSource="{Binding StatusOptions}"
-                      SelectedItem="{Binding SelectedTodo.Status}" />
-            <TextBox Grid.Row="2" Padding="4"
+                      SelectedItem="{Binding SelectedTodo.Status}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource TodoStatusToStringConverter}}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBox Grid.Row="2" Padding="{x:Static styles:LayoutConstants.ControlPadding}"
                      AcceptsReturn="True" TextWrapping="Wrap"
                      VerticalScrollBarVisibility="Auto"
                      Text="{Binding SelectedTodo.Body, UpdateSourceTrigger=PropertyChanged}" />
@@ -33,12 +50,16 @@
 
         <!-- 下半分 : 子TODO/メモ情報 -->
         <TabControl Grid.Row="1">
-            <TabItem Header="子TODO">
-                <DockPanel Margin="4">
-                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,4,0,0">
-                        <Button Content="追加" Padding="8,2" Margin="0,0,4,0"
+            <TabItem Header="{x:Static resx:Strings.Tab_ChildTodo}">
+                <DockPanel Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                                Margin="{x:Static styles:LayoutConstants.ButtonRowSpacing}">
+                        <Button Content="{x:Static resx:Strings.Button_Add}"
+                                Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
+                                Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
                                 Command="{Binding AddChildTodoCommand}" />
-                        <Button Content="削除" Padding="8,2"
+                        <Button Content="{x:Static resx:Strings.Button_Delete}"
+                                Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
                                 Command="{Binding DeleteChildTodoCommand}"
                                 CommandParameter="{Binding ElementName=ChildTodoListBox, Path=SelectedItem}" />
                     </StackPanel>
@@ -59,12 +80,16 @@
                     </ListBox>
                 </DockPanel>
             </TabItem>
-            <TabItem Header="メモ情報">
-                <DockPanel Margin="4">
-                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,4,0,0">
-                        <Button Content="追加" Padding="8,2" Margin="0,0,4,0"
+            <TabItem Header="{x:Static resx:Strings.Tab_Memo}">
+                <DockPanel Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                                Margin="{x:Static styles:LayoutConstants.ButtonRowSpacing}">
+                        <Button Content="{x:Static resx:Strings.Button_Add}"
+                                Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
+                                Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
                                 Command="{Binding AddMemoCommand}" />
-                        <Button Content="削除" Padding="8,2"
+                        <Button Content="{x:Static resx:Strings.Button_Delete}"
+                                Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
                                 Command="{Binding DeleteMemoCommand}"
                                 CommandParameter="{Binding ElementName=MemoListBox, Path=SelectedItem}" />
                     </StackPanel>
