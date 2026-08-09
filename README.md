@@ -1,14 +1,12 @@
 # TodoApp
 
-WPF (.NET) + MVVM (CommunityToolkit.Mvvm) で作成したシンプルなTODO管理デスクトップアプリです。
+WPF (.NET) + MVVM (CommunityToolkit.Mvvm) で作成する階層型TODO管理デスクトップアプリです。
 
-## 機能
+仕様は以下を参照してください。
 
-- TODOの追加・編集・削除
-- 完了/未完了の切り替え
-- すべて/未完了/完了済みでの絞り込み表示
-- 完了済みTODOの一括削除
-- `%AppData%\TodoApp\todos.json` への自動保存・読込
+- `TODOアプリ_仕様書.md`
+- `TODOアプリ_実装方針.md`
+- `ガイドライン.md`
 
 ## 動作環境
 
@@ -24,17 +22,4 @@ dotnet run --project TodoApp
 
 ```powershell
 dotnet build
-```
-
-## 構成
-
-```
-TodoApp/
-  TodoApp.sln
-  TodoApp/
-    Models/        TODOアイテムのモデル
-    ViewModels/     MainViewModel など
-    Services/       JSON永続化サービス
-    Converters/     XAML用コンバーター
-    MainWindow.xaml メイン画面
 ```
