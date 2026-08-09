@@ -14,8 +14,8 @@ namespace TodoApp.ViewModels;
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
-    private readonly TodoFileService _fileService;
-    private readonly string _rootParentDir;
+    private readonly TodoCommandFileService _commandFileService;
+    private readonly TodoChangeTracker _changeTracker;
 
     [ObservableProperty]
     private TodoItem _selectedTodo;
@@ -28,18 +28,26 @@ public partial class MainViewModel : ObservableObject
 
     public IReadOnlyList<TodoStatus> StatusOptions { get; } = Enum.GetValues<TodoStatus>();
 
-    public MainViewModel(TodoFileService fileService, string rootParentDir)
+    public MainViewModel(TodoFileReader fileReader, TodoCommandFileService commandFileService, string rootParentDir)
     {
-        _fileService = fileService;
-        _rootParentDir = rootParentDir;
-        _selectedTodo = fileService.LoadOrCreateRoot(rootParentDir);
+        _commandFileService = commandFileService;
+        _selectedTodo = fileReader.LoadOrCreateRoot(rootParentDir);
+
+        _changeTracker = new TodoChangeTracker(rootParentDir);
+        _changeTracker.Attach(_selectedTodo);
     }
 
     /// <summary>
-    /// 現在の内容をファイルへ保存する。
+    /// 変更のあった項目をキューへ積む。
     /// 定期保存とアプリ終了時の両方から呼ばれる。
     /// </summary>
-    public void Save() => _fileService.SaveRoot(SelectedTodo, _rootParentDir);
+    public void EnqueuePendingChanges()
+    {
+        foreach (var task in _changeTracker.DrainSyncTasks())
+        {
+            _commandFileService.Enqueue(task);
+        }
+    }
 
     [RelayCommand]
     private void AddChildTodo()
