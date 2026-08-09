@@ -16,20 +16,22 @@ public partial class App : Application
     private static readonly string DefaultRootParentDir =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TodoApp");
 
-    private static readonly TimeSpan AutoSaveInterval = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan AutoSaveInterval = TimeSpan.FromSeconds(1);
 
     private MainViewModel? _viewModel;
+    private TodoCommandFileService? _commandFileService;
     private DispatcherTimer? _autoSaveTimer;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
-        var fileService = new TodoFileService();
-        _viewModel = new MainViewModel(fileService, DefaultRootParentDir);
+        var fileReader = new TodoFileReader();
+        _commandFileService = new TodoCommandFileService();
+        _viewModel = new MainViewModel(fileReader, _commandFileService, DefaultRootParentDir);
 
         _autoSaveTimer = new DispatcherTimer { Interval = AutoSaveInterval };
-        _autoSaveTimer.Tick += (_, _) => _viewModel.Save();
+        _autoSaveTimer.Tick += (_, _) => _viewModel.EnqueuePendingChanges();
         _autoSaveTimer.Start();
 
         var mainWindow = new MainWindow { DataContext = _viewModel };
@@ -38,8 +40,10 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
-        // 終了時は同期的に保存し、直前の変更を確実に残す。
-        _viewModel?.Save();
+        // 終了時は、残っている変更を全てキューへ積んでから
+        // 書き込みが終わるまで同期的に待つ。
+        _viewModel?.EnqueuePendingChanges();
+        _commandFileService?.FlushAsync().GetAwaiter().GetResult();
         base.OnExit(e);
     }
 }
