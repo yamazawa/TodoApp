@@ -75,16 +75,41 @@ public partial class MainViewModel : ObservableObject
         DeleteWithConfirm(SelectedMemo, SelectedTodo.MemoList, Strings.ConfirmDelete_MemoMessage);
 
     [RelayCommand]
-    private void MoveChildTodoUp() => Move(SelectedTodo.ChildTodoList, SelectedChildTodo, -1);
+    private void MoveChildTodoUp() => MoveChildTodo(-1);
 
     [RelayCommand]
-    private void MoveChildTodoDown() => Move(SelectedTodo.ChildTodoList, SelectedChildTodo, 1);
+    private void MoveChildTodoDown() => MoveChildTodo(1);
 
     [RelayCommand]
     private void MoveMemoUp() => Move(SelectedTodo.MemoList, SelectedMemo, -1);
 
     [RelayCommand]
     private void MoveMemoDown() => Move(SelectedTodo.MemoList, SelectedMemo, 1);
+
+    // 子TODOは自動ソート優先のため、ステータスが同じ項目同士でしか入れ替えない。
+    private void MoveChildTodo(int delta)
+    {
+        var list = SelectedTodo.ChildTodoList;
+        var item = SelectedChildTodo;
+        if (item is null)
+        {
+            return;
+        }
+
+        var oldIndex = list.IndexOf(item);
+        var newIndex = oldIndex + delta;
+        if (oldIndex < 0 || newIndex < 0 || newIndex >= list.Count)
+        {
+            return;
+        }
+
+        if (list[oldIndex].Status != list[newIndex].Status)
+        {
+            return;
+        }
+
+        list.Move(oldIndex, newIndex);
+    }
 
     private static void Move<T>(ObservableCollection<T> list, T? item, int delta)
     {
