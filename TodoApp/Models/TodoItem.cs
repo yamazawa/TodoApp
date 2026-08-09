@@ -10,7 +10,7 @@ namespace TodoApp.Models;
 public partial class TodoItem : TitledItem
 {
     [ObservableProperty]
-    private TodoStatus _status = TodoStatus.未対応;
+    private TodoStatus _status = TodoStatus.NotStarted;
 
     public ObservableCollection<MemoItem> MemoList { get; } = [];
 

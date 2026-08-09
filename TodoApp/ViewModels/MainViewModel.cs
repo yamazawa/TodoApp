@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TodoApp.Models;
 using TodoApp.Models.Enums;
+using TodoApp.Resources;
 
 namespace TodoApp.ViewModels;
 
@@ -22,14 +23,14 @@ public partial class MainViewModel : ObservableObject
 
     [RelayCommand]
     private void DeleteChildTodo(TodoItem? item) =>
-        DeleteWithConfirm(item, SelectedTodo.ChildTodoList, "この子TODOを削除しますか？\n(子要素も全て削除されます)");
+        DeleteWithConfirm(item, SelectedTodo.ChildTodoList, Strings.ConfirmDelete_ChildTodoMessage);
 
     [RelayCommand]
     private void AddMemo() => SelectedTodo.MemoList.Add(new MemoItem());
 
     [RelayCommand]
     private void DeleteMemo(MemoItem? item) =>
-        DeleteWithConfirm(item, SelectedTodo.MemoList, "このメモ情報を削除しますか？");
+        DeleteWithConfirm(item, SelectedTodo.MemoList, Strings.ConfirmDelete_MemoMessage);
 
     private static void DeleteWithConfirm<T>(T? item, ObservableCollection<T> list, string message)
     {
@@ -38,7 +39,7 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        var result = MessageBox.Show(message, "削除の確認", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        var result = MessageBox.Show(message, Strings.ConfirmDelete_Title, MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (result == MessageBoxResult.Yes)
         {
             list.Remove(item);

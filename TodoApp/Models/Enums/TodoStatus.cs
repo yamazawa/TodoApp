@@ -2,10 +2,11 @@ namespace TodoApp.Models.Enums;
 
 /// <summary>
 /// TODO項目のステータス。
+/// 表示文字列はTodoApp.Resources.Stringsで管理する。
 /// </summary>
 public enum TodoStatus
 {
-    未対応,
-    対応中,
-    完了,
+    NotStarted,
+    InProgress,
+    Done,
 }
