@@ -14,6 +14,8 @@ namespace TodoApp.Models;
 /// </summary>
 public partial class TodoItem : TitledItem
 {
+    private bool _disposed;
+
     [ObservableProperty]
     private TodoStatus _status = TodoStatus.NotStarted;
 
@@ -37,38 +39,57 @@ public partial class TodoItem : TitledItem
         ChildTodoList.CollectionChanged += OnChildTodoListChanged;
     }
 
-    // 子TODOは対応中→未対応→完了の順で自動ソートする。
-    // 追加された子/ステータス変更を監視し、都度並び替える。
-    private void OnChildTodoListChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    // 保有者(自分)が子TODOを破棄する。
+    // 子孫のイベント購読も含めて全て解放する。
+    public override void Dispose()
     {
-        if (e.NewItems is not null)
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        ChildTodoList.CollectionChanged -= OnChildTodoListChanged;
+
+        foreach (var child in ChildTodoList)
         {
-            foreach (TodoItem child in e.NewItems)
-            {
-                child.PropertyChanged += OnChildStatusChanged;
-            }
+            child.PropertyChanged -= OnChildStatusChanged;
+            child.Dispose();
         }
 
-        if (e.OldItems is not null)
+        foreach (var memo in MemoList)
         {
-            foreach (TodoItem child in e.OldItems)
+            memo.Dispose();
+        }
+
+        base.Dispose();
+    }
+
+    // 子TODOは対応中→未対応→完了の順で自動ソートする。
+    // 追加された子/ステータス変更を監視し、都度並び替える。
+    // 削除された子は自分が保有者として破棄する。
+    private void OnChildTodoListChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        e.ForEachAddedRemoved<TodoItem>(
+            added => added.PropertyChanged += OnChildStatusChanged,
+            removed => removed.PropertyChanged -= OnChildStatusChanged);
+
+        if (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+        {
+            foreach (TodoItem removed in e.OldItems)
             {
-                child.PropertyChanged -= OnChildStatusChanged;
+                removed.Dispose();
             }
         }
 
         if (e.Action != NotifyCollectionChangedAction.Move)
-        {
             SortChildren();
-        }
     }
 
     private void OnChildStatusChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(Status))
-        {
-            SortChildren();
-        }
+        if (e.PropertyName != nameof(Status))
+            return;
+
+        SortChildren();
     }
 
     private void SortChildren()
@@ -77,10 +98,10 @@ public partial class TodoItem : TitledItem
         for (var i = 0; i < sorted.Count; i++)
         {
             var currentIndex = ChildTodoList.IndexOf(sorted[i]);
-            if (currentIndex != i)
-            {
-                ChildTodoList.Move(currentIndex, i);
-            }
+            if (currentIndex == i)
+                continue;
+
+            ChildTodoList.Move(currentIndex, i);
         }
     }
 
