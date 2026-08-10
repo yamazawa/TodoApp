@@ -83,17 +83,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _windowHeight = settings.WindowHeight;
     }
 
-    partial void OnTopBottomRatioChanged(double value) => _settingsDirty = true;
+    partial void OnTopBottomRatioChanged(double value) => MarkSettingsDirty();
 
-    partial void OnBottomLeftRightRatioChanged(double value) => _settingsDirty = true;
+    partial void OnBottomLeftRightRatioChanged(double value) => MarkSettingsDirty();
 
-    partial void OnNestedTopBottomRatioChanged(double value) => _settingsDirty = true;
+    partial void OnNestedTopBottomRatioChanged(double value) => MarkSettingsDirty();
 
-    partial void OnNestedLeftRightRatioChanged(double value) => _settingsDirty = true;
+    partial void OnNestedLeftRightRatioChanged(double value) => MarkSettingsDirty();
 
-    partial void OnWindowWidthChanged(double value) => _settingsDirty = true;
+    partial void OnWindowWidthChanged(double value) => MarkSettingsDirty();
 
-    partial void OnWindowHeightChanged(double value) => _settingsDirty = true;
+    partial void OnWindowHeightChanged(double value) => MarkSettingsDirty();
+
+    private void MarkSettingsDirty() => _settingsDirty = true;
 
     /// <summary>
     /// 比率・ウィンドウサイズに変更があれば⑤アプリ全体設定を保存する
@@ -152,7 +154,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         SelectedTodo = _loadedRoot;
         oldRoot.Dispose();
-        _settingsDirty = true;
+        MarkSettingsDirty();
     }
 
     // SelectedTodoの差し替えに合わせてRootNode/パンくずリストも作り直す。
