@@ -30,9 +30,7 @@ public class TodoFileWriter
             .FirstOrDefault(dir => TodoFileNaming.ParseTodoFolderName(Path.GetFileName(dir)) is not null);
 
         if (existingPath is not null && existingPath != desiredPath)
-        {
             Directory.Move(existingPath, desiredPath);
-        }
 
         SaveTodoContents(root, desiredPath);
     }
@@ -77,12 +75,8 @@ public class TodoFileWriter
     private static void DeleteEntry(string path)
     {
         if (Directory.Exists(path))
-        {
             Directory.Delete(path, recursive: true);
-        }
         else
-        {
             File.Delete(path);
-        }
     }
 }

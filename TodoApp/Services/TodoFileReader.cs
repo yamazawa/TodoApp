@@ -38,17 +38,13 @@ public class TodoFileReader
         foreach (var dir in Directory.GetDirectories(folderPath).OrderBy(GetOrdinal))
         {
             if (TodoFileNaming.ParseTodoFolderName(Path.GetFileName(dir)) is not null)
-            {
                 todo.ChildTodoList.Add(LoadTodo(dir));
-            }
         }
 
         foreach (var file in Directory.GetFiles(folderPath, "*.md").OrderBy(GetOrdinal))
         {
             if (Path.GetFileName(file) == TodoFileNaming.ReadmeFileName)
-            {
                 continue;
-            }
 
             var title = TodoFileNaming.ParseMemoFileName(Path.GetFileNameWithoutExtension(file));
             todo.MemoList.Add(new MemoItem { Title = title, Body = File.ReadAllText(file) });
@@ -63,29 +59,21 @@ public class TodoFileReader
     {
         var saveInfoPath = Path.Combine(folderPath, TodoFileNaming.SaveInfoFileName);
         if (!File.Exists(saveInfoPath))
-        {
             return;
-        }
 
         try
         {
             var json = File.ReadAllText(saveInfoPath);
             var info = JsonSerializer.Deserialize<TodoSaveInfo>(json);
             if (info is null)
-            {
                 return;
-            }
 
             todo.SelectedTabIndex = info.SelectedTabIndex;
             if (info.SelectedChildIndex is { } childIndex && childIndex >= 0 && childIndex < todo.ChildTodoList.Count)
-            {
                 todo.SelectedChildTodo = todo.ChildTodoList[childIndex];
-            }
 
             if (info.SelectedMemoIndex is { } memoIndex && memoIndex >= 0 && memoIndex < todo.MemoList.Count)
-            {
                 todo.SelectedMemo = todo.MemoList[memoIndex];
-            }
         }
         catch (JsonException)
         {

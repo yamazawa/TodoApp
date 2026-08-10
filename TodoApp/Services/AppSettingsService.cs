@@ -29,9 +29,7 @@ public class AppSettingsService
     {
         var loaded = TryLoad();
         if (loaded is not null)
-        {
             return loaded;
-        }
 
         var defaultSettings = new AppSettings(defaultRootParentDir);
         Save(defaultSettings);
@@ -46,9 +44,7 @@ public class AppSettingsService
     private AppSettings? TryLoad()
     {
         if (!File.Exists(_settingsPath))
-        {
             return null;
-        }
 
         try
         {

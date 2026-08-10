@@ -29,9 +29,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         set
         {
             if (ReferenceEquals(SelectedTodo.SelectedChildTodo, value))
-            {
                 return;
-            }
 
             SelectedTodo.SelectedChildTodo = value;
             OnPropertyChanged();
@@ -44,9 +42,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         set
         {
             if (ReferenceEquals(SelectedTodo.SelectedMemo, value))
-            {
                 return;
-            }
 
             SelectedTodo.SelectedMemo = value;
             OnPropertyChanged();
@@ -59,9 +55,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         set
         {
             if (SelectedTodo.SelectedTabIndex == value)
-            {
                 return;
-            }
 
             SelectedTodo.SelectedTabIndex = value;
             OnPropertyChanged();
@@ -147,9 +141,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void ConvertChildTodoToMemo()
     {
         if (SelectedChildTodo is not { } item)
-        {
             return;
-        }
 
         var newMemos = FlattenToMemos(item);
         SelectedTodo.ChildTodoList.Remove(item);
@@ -167,9 +159,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void ConvertMemoToChildTodo()
     {
         if (SelectedMemo is not { } memo)
-        {
             return;
-        }
 
         var newItem = new TodoItem { Title = memo.Title, Body = memo.Body };
         SelectedTodo.MemoList.Remove(memo);
@@ -198,21 +188,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var list = SelectedTodo.ChildTodoList;
         var item = SelectedChildTodo;
         if (item is null)
-        {
             return;
-        }
 
         var oldIndex = list.IndexOf(item);
         var newIndex = oldIndex + delta;
         if (oldIndex < 0 || newIndex < 0 || newIndex >= list.Count)
-        {
             return;
-        }
 
         if (list[oldIndex].Status != list[newIndex].Status)
-        {
             return;
-        }
 
         list.Move(oldIndex, newIndex);
     }
@@ -220,16 +204,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private static void Move<T>(ObservableCollection<T> list, T? item, int delta)
     {
         if (item is null)
-        {
             return;
-        }
 
         var oldIndex = list.IndexOf(item);
         var newIndex = oldIndex + delta;
         if (oldIndex < 0 || newIndex < 0 || newIndex >= list.Count)
-        {
             return;
-        }
 
         list.Move(oldIndex, newIndex);
     }
@@ -237,14 +217,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private static void DeleteWithConfirm<T>(T? item, ObservableCollection<T> list, string message)
     {
         if (item is null)
-        {
             return;
-        }
 
         var result = MessageBox.Show(message, Strings.ConfirmDelete_Title, MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (result == MessageBoxResult.Yes)
-        {
             list.Remove(item);
-        }
     }
 }
