@@ -116,6 +116,15 @@ namespace TodoApp.Resources {
         }
 
         /// <summary>
+        ///   (タイトルなし) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Breadcrumb_NullTitle {
+            get {
+                return ResourceManager.GetString("Breadcrumb_NullTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   メモ情報へ変換 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Menu_ConvertToMemo {
