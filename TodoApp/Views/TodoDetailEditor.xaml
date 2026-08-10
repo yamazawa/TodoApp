@@ -9,6 +9,8 @@
              x:Name="Root">
     <UserControl.Resources>
         <conv:TodoStatusToStringConverter x:Key="TodoStatusToStringConverter" />
+        <conv:EmptyStringToNullConverter x:Key="EmptyStringToNullConverter" />
+        <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
     <Grid>
@@ -16,10 +18,33 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBox Grid.Row="0" Margin="{x:Static styles:LayoutConstants.FieldSpacing}"
-                 Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                 Text="{Binding Title, ElementName=Root, UpdateSourceTrigger=PropertyChanged}" />
+        <Grid Grid.Row="0" Margin="{x:Static styles:LayoutConstants.FieldSpacing}">
+            <!-- タイトルがnullかつ未フォーカス時は、本文の1行目を濃いグレーで代わりに表示する。 -->
+            <TextBox x:Name="TitleTextBox"
+                     Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+                     Text="{Binding Title, ElementName=Root, Converter={StaticResource EmptyStringToNullConverter}, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock IsHitTestVisible="False"
+                       Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+                       Foreground="DarkGray"
+                       Text="{Binding DisplayTitle, ElementName=Root}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Title, ElementName=Root}" Value="{x:Null}" />
+                                    <Condition Binding="{Binding IsFocused, ElementName=TitleTextBox}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
         <ComboBox Grid.Row="1" Margin="{x:Static styles:LayoutConstants.FieldSpacing}"
                   MinWidth="100" HorizontalAlignment="Left"
                   Visibility="{Binding ShowStatus, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -35,5 +60,10 @@
                  AcceptsReturn="True" TextWrapping="Wrap"
                  VerticalScrollBarVisibility="Auto"
                  Text="{Binding Body, ElementName=Root, UpdateSourceTrigger=PropertyChanged}" />
+
+        <!-- 孫項目詳細(TODO項目)でのみ、子TODOの完了数/総数を表示する。 -->
+        <TextBlock Grid.Row="3" Margin="{x:Static styles:LayoutConstants.FieldSpacing}"
+                   Text="{Binding ChildCountText, ElementName=Root}"
+                   Visibility="{Binding ChildCountText, ElementName=Root, Converter={StaticResource NullToVisibilityConverter}}" />
     </Grid>
 </UserControl>
