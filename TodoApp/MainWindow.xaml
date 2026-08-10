@@ -29,9 +29,9 @@
     <Grid Margin="{x:Static styles:LayoutConstants.RootMargin}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="{Binding TopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+            <RowDefinition Height="{Binding TopBottomRatio, Mode=TwoWay, Converter={StaticResource RatioToGridLengthConverter}}" />
             <RowDefinition Height="{x:Static styles:LayoutConstants.SplitterThickness}" />
-            <RowDefinition Height="{Binding TopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+            <RowDefinition Height="{Binding TopBottomRatio, Mode=TwoWay, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
         </Grid.RowDefinitions>
 
         <!-- パンくずリスト : 親TODOへのリンク。祖先が無ければ何も表示しない。 -->
@@ -69,9 +69,9 @@
         <!-- 下半分 : 左側(子TODO/メモ情報の一覧) / 右側(選択項目の詳細) -->
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+                <ColumnDefinition Width="{Binding BottomLeftRightRatio, Mode=TwoWay, Converter={StaticResource RatioToGridLengthConverter}}" />
                 <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
-                <ColumnDefinition Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+                <ColumnDefinition Width="{Binding BottomLeftRightRatio, Mode=TwoWay, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
             </Grid.ColumnDefinitions>
 
             <views:TodoListPanel Grid.Column="0" DataContext="{Binding RootNode}"
@@ -85,9 +85,9 @@
                 <!-- 子TODOタブ選択時 : 画面全体と同様に、上にタイトル・左下に孫項目リスト・右下に孫項目詳細を表示する。 -->
                 <Grid Visibility="{Binding RootNode.IsChildTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="{Binding NestedTopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+                        <RowDefinition Height="{Binding NestedTopBottomRatio, Mode=TwoWay, Converter={StaticResource RatioToGridLengthConverter}}" />
                         <RowDefinition Height="{x:Static styles:LayoutConstants.SplitterThickness}" />
-                        <RowDefinition Height="{Binding NestedTopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+                        <RowDefinition Height="{Binding NestedTopBottomRatio, Mode=TwoWay, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
                     </Grid.RowDefinitions>
 
                     <views:TodoDetailEditor Grid.Row="0" Margin="{x:Static styles:LayoutConstants.SectionSpacing}"
@@ -105,9 +105,9 @@
 
                     <Grid Grid.Row="2">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+                            <ColumnDefinition Width="{Binding NestedLeftRightRatio, Mode=TwoWay, Converter={StaticResource RatioToGridLengthConverter}}" />
                             <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
-                            <ColumnDefinition Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+                            <ColumnDefinition Width="{Binding NestedLeftRightRatio, Mode=TwoWay, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
                         </Grid.ColumnDefinitions>
 
                         <views:TodoListPanel Grid.Column="0" DataContext="{Binding ChildNode}"
