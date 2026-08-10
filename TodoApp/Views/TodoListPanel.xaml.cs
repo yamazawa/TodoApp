@@ -27,4 +27,12 @@ public partial class TodoListPanel : UserControl
         get => (ICommand?)GetValue(NavigateToChildCommandProperty);
         set => SetValue(NavigateToChildCommandProperty, value);
     }
+
+    // 右クリックした項目を選択状態にする。
+    // 削除メニューは選択中の項目に対して動作するため、右クリック時点で選択を合わせる。
+    private void ListBoxItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is ListBoxItem item)
+            item.IsSelected = true;
+    }
 }

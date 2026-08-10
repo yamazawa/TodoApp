@@ -27,6 +27,8 @@
                                       CommandParameter="{Binding}" />
                             <MenuItem Header="{x:Static resx:Strings.Menu_ConvertToMemo}"
                                       Command="{Binding Path=PlacementTarget.Tag.DataContext.ConvertChildTodoToMemoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="{x:Static resx:Strings.Button_Delete}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.DeleteChildTodoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         </ContextMenu>
                     </TextBlock.ContextMenu>
                 </TextBlock>
@@ -58,13 +60,15 @@
                 <TextBlock x:Name="DisplayText"
                            Text="{Binding DisplayTitle}"
                            Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                           Tag="{Binding DataContext.ConvertMemoToChildTodoCommand, ElementName=Root}">
+                           Tag="{Binding ElementName=Root}">
                     <TextBlock.ContextMenu>
                         <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                             <MenuItem Header="{x:Static resx:Strings.Menu_Edit}"
                                       Command="{Binding StartEditCommand}" />
                             <MenuItem Header="{x:Static resx:Strings.Menu_ConvertToChildTodo}"
-                                      Command="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.ConvertMemoToChildTodoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="{x:Static resx:Strings.Button_Delete}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.DeleteMemoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         </ContextMenu>
                     </TextBlock.ContextMenu>
                 </TextBlock>
@@ -90,8 +94,22 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
+        <!-- 右クリックした項目を選択状態にする(削除メニューを選択中の項目に対して動作させるため)。 -->
         <Style x:Key="StretchListBoxItemStyle" TargetType="ListBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBoxItem_PreviewMouseRightButtonDown" />
+        </Style>
+
+        <!-- 子TODOは進行中の項目を薄い黄色、完了済みの項目を薄いグレーの背景にする。 -->
+        <Style x:Key="ChildTodoListBoxItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource StretchListBoxItemStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="InProgress">
+                    <Setter Property="Background" Value="LightYellow" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Done">
+                    <Setter Property="Background" Value="LightGray" />
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
     </UserControl.Resources>
 
@@ -104,21 +122,17 @@
         </TabControl.ItemsPanel>
         <TabItem Header="{Binding ChildTabHeader}">
             <DockPanel Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
-                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
-                            Margin="{x:Static styles:LayoutConstants.ButtonRowSpacing}">
-                    <Button Content="{x:Static resx:Strings.Button_Add}"
-                            Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
-                            Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
-                            Command="{Binding AddChildTodoCommand}" />
-                    <Button Content="{x:Static resx:Strings.Button_Delete}"
-                            Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
-                            Command="{Binding DeleteChildTodoCommand}" />
-                </StackPanel>
+                <!-- 項目のない箇所を右クリックすると追加を表示する。項目自体の右クリックは各項目のContextMenuが優先される。 -->
                 <ListBox x:Name="ChildTodoListBox"
                          ItemsSource="{Binding Node.ChildTodoList}"
                          SelectedItem="{Binding SelectedChildTodo}"
-                         ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
+                         ItemContainerStyle="{StaticResource ChildTodoListBoxItemStyle}"
                          ItemTemplate="{StaticResource ChildTodoItemTemplate}">
+                    <ListBox.ContextMenu>
+                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="{x:Static resx:Strings.Button_Add}" Command="{Binding AddChildTodoCommand}" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
                     <ListBox.InputBindings>
                         <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveChildTodoUpCommand}" />
                         <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveChildTodoDownCommand}" />
@@ -128,21 +142,17 @@
         </TabItem>
         <TabItem Header="{Binding MemoTabHeader}">
             <DockPanel Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
-                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
-                            Margin="{x:Static styles:LayoutConstants.ButtonRowSpacing}">
-                    <Button Content="{x:Static resx:Strings.Button_Add}"
-                            Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
-                            Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
-                            Command="{Binding AddMemoCommand}" />
-                    <Button Content="{x:Static resx:Strings.Button_Delete}"
-                            Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
-                            Command="{Binding DeleteMemoCommand}" />
-                </StackPanel>
+                <!-- 項目のない箇所を右クリックすると追加を表示する。項目自体の右クリックは各項目のContextMenuが優先される。 -->
                 <ListBox x:Name="MemoListBox"
                          ItemsSource="{Binding Node.MemoList}"
                          SelectedItem="{Binding SelectedMemo}"
                          ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
                          ItemTemplate="{StaticResource MemoItemTemplate}">
+                    <ListBox.ContextMenu>
+                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="{x:Static resx:Strings.Button_Add}" Command="{Binding AddMemoCommand}" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
                     <ListBox.InputBindings>
                         <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveMemoUpCommand}" />
                         <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveMemoDownCommand}" />
