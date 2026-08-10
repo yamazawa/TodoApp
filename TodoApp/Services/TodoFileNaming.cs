@@ -13,6 +13,7 @@ namespace TodoApp.Services;
 public static class TodoFileNaming
 {
     public const string ReadmeFileName = "0_README.md";
+    public const string SaveInfoFileName = "_save.json";
     public const string NullTitlePlaceholder = "NULL";
     private static readonly char[] ForbiddenChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|'];
 
@@ -45,18 +46,14 @@ public static class TodoFileNaming
     {
         var firstUnderscore = folderName.IndexOf('_');
         if (firstUnderscore < 0)
-        {
             return null;
-        }
 
         var afterOrdinal = folderName[(firstUnderscore + 1)..];
         foreach (var (status, textFactory) in StatusMap)
         {
             var suffix = "_" + textFactory();
             if (afterOrdinal.EndsWith(suffix, StringComparison.Ordinal))
-            {
                 return (ParseTitle(afterOrdinal[..^suffix.Length]), status);
-            }
         }
 
         return null;
@@ -76,9 +73,7 @@ public static class TodoFileNaming
     private static string SanitizeTitle(string? title)
     {
         if (string.IsNullOrEmpty(title))
-        {
             return NullTitlePlaceholder;
-        }
 
         var sanitized = title;
         foreach (var forbidden in ForbiddenChars)

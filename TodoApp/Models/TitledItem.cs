@@ -8,7 +8,7 @@ namespace TodoApp.Models;
 ///
 /// TodoItem、MemoItemの両方から使う。
 /// </summary>
-public abstract partial class TitledItem : ObservableObject
+public abstract partial class TitledItem : ObservableObject, IDisposable
 {
     [ObservableProperty]
     private string? _title;
@@ -46,4 +46,7 @@ public abstract partial class TitledItem : ObservableObject
         var index = text.IndexOfAny(['\r', '\n']);
         return index < 0 ? text : text[..index];
     }
+
+    // 既定では解放するものが無い。イベント購読を持つ派生クラスでオーバーライドする。
+    public virtual void Dispose() => GC.SuppressFinalize(this);
 }

@@ -11,8 +11,7 @@ namespace TodoApp;
 /// </summary>
 public partial class App : Application
 {
-    // ⑤アプリ全体設定(起動時フォルダパス)はタスク4で実装するため、
-    // タスク3では固定の既定フォルダを使う。
+    // ⑤アプリ全体設定に起動フォルダパスが無い場合の既定値。
     private static readonly string DefaultRootParentDir =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TodoApp");
 
@@ -26,9 +25,11 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        var appSettings = new AppSettingsService().LoadOrCreateDefault(DefaultRootParentDir);
+
         var fileReader = new TodoFileReader();
         _commandFileService = new TodoCommandFileService();
-        _viewModel = new MainViewModel(fileReader, _commandFileService, DefaultRootParentDir);
+        _viewModel = new MainViewModel(fileReader, _commandFileService, appSettings.RootParentDir);
 
         _autoSaveTimer = new DispatcherTimer { Interval = AutoSaveInterval };
         _autoSaveTimer.Tick += (_, _) => _viewModel.EnqueuePendingChanges();
@@ -44,6 +45,7 @@ public partial class App : Application
         // 書き込みが終わるまで同期的に待つ。
         _viewModel?.EnqueuePendingChanges();
         _commandFileService?.FlushAsync().GetAwaiter().GetResult();
+        _viewModel?.Dispose();
         base.OnExit(e);
     }
 }

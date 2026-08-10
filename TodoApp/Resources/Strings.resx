@@ -95,4 +95,10 @@
   <data name="Menu_Edit" xml:space="preserve">
     <value>編集</value>
   </data>
+  <data name="Menu_ConvertToMemo" xml:space="preserve">
+    <value>メモ情報へ変換</value>
+  </data>
+  <data name="Menu_ConvertToChildTodo" xml:space="preserve">
+    <value>TODO情報へ変換</value>
+  </data>
 </root>

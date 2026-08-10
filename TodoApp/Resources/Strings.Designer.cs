@@ -107,6 +107,24 @@ namespace TodoApp.Resources {
         }
         
         /// <summary>
+        ///   TODO情報へ変換 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_ConvertToChildTodo {
+            get {
+                return ResourceManager.GetString("Menu_ConvertToChildTodo", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   メモ情報へ変換 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_ConvertToMemo {
+            get {
+                return ResourceManager.GetString("Menu_ConvertToMemo", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   編集 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Menu_Edit {
@@ -114,7 +132,7 @@ namespace TodoApp.Resources {
                 return ResourceManager.GetString("Menu_Edit", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   完了 に類似しているローカライズされた文字列を検索します。
         /// </summary>

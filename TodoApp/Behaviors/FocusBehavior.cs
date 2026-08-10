@@ -25,9 +25,7 @@ public static class FocusBehavior
     private static void OnIsFocusedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is not UIElement element || e.NewValue is not true)
-        {
             return;
-        }
 
         // バインド直後(コンテナ生成直後)はFocus()が効かないことがあるため、
         // レイアウト確定後にフォーカスする。

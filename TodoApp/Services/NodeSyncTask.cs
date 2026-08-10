@@ -18,4 +18,5 @@ public sealed record NodeSyncTask(
     TodoStatus Status,
     string Body,
     IReadOnlyList<(string FileName, string Content)> Memos,
-    IReadOnlyList<(TodoItem Identity, int Ordinal, string? Title, TodoStatus Status)> Children);
+    IReadOnlyList<(TodoItem Identity, int Ordinal, string? Title, TodoStatus Status)> Children,
+    TodoSaveInfo SaveInfo);

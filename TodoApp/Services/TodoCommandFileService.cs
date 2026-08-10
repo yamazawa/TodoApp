@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading.Channels;
 using TodoApp.Models;
 
@@ -58,6 +59,7 @@ public class TodoCommandFileService
         var selfPath = MoveOrCreate(task.Identity, parentPath, task.Ordinal, task.Title, task.Status);
 
         File.WriteAllText(Path.Combine(selfPath, TodoFileNaming.ReadmeFileName), task.Body);
+        File.WriteAllText(Path.Combine(selfPath, TodoFileNaming.SaveInfoFileName), JsonSerializer.Serialize(task.SaveInfo));
         SyncMemoFiles(selfPath, task.Memos);
         SyncChildFolders(selfPath, task.Children);
     }
@@ -65,9 +67,7 @@ public class TodoCommandFileService
     private string ResolveParentPath(NodeSyncTask task)
     {
         if (task.ParentIdentity is null)
-        {
             return task.RootParentDir;
-        }
 
         // 親は自分より先に処理されている前提(DrainSyncTasksが深さ順に並べる)。
         return _lastKnownPath.TryGetValue(task.ParentIdentity, out var path) ? path : task.RootParentDir;
@@ -81,9 +81,7 @@ public class TodoCommandFileService
         if (_lastKnownPath.TryGetValue(identity, out var oldPath) && Directory.Exists(oldPath))
         {
             if (oldPath != desiredPath)
-            {
                 Directory.Move(oldPath, desiredPath);
-            }
         }
         else
         {
@@ -101,9 +99,7 @@ public class TodoCommandFileService
         {
             var name = Path.GetFileName(existing);
             if (name != TodoFileNaming.ReadmeFileName && !desiredNames.Contains(name))
-            {
                 File.Delete(existing);
-            }
         }
 
         foreach (var (fileName, content) in memos)
@@ -125,9 +121,7 @@ public class TodoCommandFileService
         foreach (var existingDir in Directory.GetDirectories(selfPath))
         {
             if (!desiredNames.Contains(Path.GetFileName(existingDir)))
-            {
                 Directory.Delete(existingDir, recursive: true);
-            }
         }
     }
 }
