@@ -45,6 +45,7 @@ public partial class App : Application
         // 書き込みが終わるまで同期的に待つ。
         _viewModel?.EnqueuePendingChanges();
         _commandFileService?.FlushAsync().GetAwaiter().GetResult();
+        _viewModel?.Dispose();
         base.OnExit(e);
     }
 }

@@ -13,7 +13,7 @@ namespace TodoApp.ViewModels;
 /// <summary>
 /// メイン画面のViewModel。
 /// </summary>
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly TodoCommandFileService _commandFileService;
     private readonly TodoChangeTracker _changeTracker;
@@ -96,6 +96,14 @@ public partial class MainViewModel : ObservableObject
         {
             _commandFileService.Enqueue(task);
         }
+    }
+
+    // TodoItemツリーの保有者として、購読解除と破棄を行う。
+    public void Dispose()
+    {
+        _changeTracker.Dispose();
+        SelectedTodo.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [RelayCommand]
