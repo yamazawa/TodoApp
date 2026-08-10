@@ -38,7 +38,7 @@ public class TodoFileReader
         foreach (var dir in Directory.GetDirectories(folderPath).OrderBy(GetOrdinal))
         {
             if (TodoFileNaming.ParseTodoFolderName(Path.GetFileName(dir)) is not null)
-                todo.ChildTodoList.Add(LoadTodo(dir));
+                todo.AddChild(LoadTodo(dir));
         }
 
         foreach (var file in Directory.GetFiles(folderPath, "*.md").OrderBy(GetOrdinal))

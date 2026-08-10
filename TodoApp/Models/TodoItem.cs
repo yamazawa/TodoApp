@@ -34,9 +34,23 @@ public partial class TodoItem : TitledItem
 
     public ObservableCollection<TodoItem> ChildTodoList { get; } = [];
 
+    /// <summary>
+    /// 孫項目詳細で表示する、子TODOの完了数/総数
+    /// </summary>
+    public string ChildCountText => $"({ChildTodoList.Count(c => c.Status == TodoStatus.Done)}/{ChildTodoList.Count})";
+
     public TodoItem()
     {
         ChildTodoList.CollectionChanged += OnChildTodoListChanged;
+    }
+
+    // 子TODOを対応中→未対応→完了の順を保った位置に挿入する。
+    // 挿入時点で正しい位置に置くことで、CollectionChangedイベント中に
+    // Moveを呼ぶ再入エラー(ObservableCollectionの制約)を避ける。
+    public void AddChild(TodoItem child)
+    {
+        var index = ChildTodoList.TakeWhile(existing => StatusPriority(existing) <= StatusPriority(child)).Count();
+        ChildTodoList.Insert(index, child);
     }
 
     // 保有者(自分)が子TODOを破棄する。
@@ -64,7 +78,9 @@ public partial class TodoItem : TitledItem
     }
 
     // 子TODOは対応中→未対応→完了の順で自動ソートする。
-    // 追加された子/ステータス変更を監視し、都度並び替える。
+    // 並び替え自体はステータス変更時(OnChildStatusChanged)にのみ行う。
+    // ※ChildTodoList自身のCollectionChanged中にMoveを呼ぶと再入エラーになるため、
+    //   追加時の並び替えはAddChildでの挿入位置決定に任せる。
     // 削除された子は自分が保有者として破棄する。
     private void OnChildTodoListChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -81,7 +97,7 @@ public partial class TodoItem : TitledItem
         }
 
         if (e.Action != NotifyCollectionChangedAction.Move)
-            SortChildren();
+            OnPropertyChanged(nameof(ChildCountText));
     }
 
     private void OnChildStatusChanged(object? sender, PropertyChangedEventArgs e)
@@ -90,6 +106,7 @@ public partial class TodoItem : TitledItem
             return;
 
         SortChildren();
+        OnPropertyChanged(nameof(ChildCountText));
     }
 
     private void SortChildren()
