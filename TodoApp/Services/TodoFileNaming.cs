@@ -15,6 +15,9 @@ public static class TodoFileNaming
     public const string ReadmeFileName = "0_README.md";
     public const string SaveInfoFileName = "_save.json";
     public const string NullTitlePlaceholder = "NULL";
+
+    // 連番を1桁で表現するため、子TODO/メモ情報は共に最大9個までとする。
+    public const int MaxItemCount = 9;
     private static readonly char[] ForbiddenChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|'];
 
     private static readonly (TodoStatus Status, Func<string> TextFactory)[] StatusMap =

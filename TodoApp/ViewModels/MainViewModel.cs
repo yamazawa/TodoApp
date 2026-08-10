@@ -1,10 +1,8 @@
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows;
+using System.ComponentModel;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TodoApp.Models;
-using TodoApp.Models.Enums;
 using TodoApp.Resources;
 using TodoApp.Services;
 
@@ -12,71 +10,210 @@ namespace TodoApp.ViewModels;
 
 /// <summary>
 /// メイン画面のViewModel。
+///
+/// ルートTODOに対する子TODO/メモ情報の操作はRootNode(TodoNodeViewModel)に委譲する。
+/// 下半分の右側に子TODOの孫項目パネルを表示するため、選択中の子TODOをChildNodeとして持つ。
 /// </summary>
 public partial class MainViewModel : ObservableObject, IDisposable
 {
+    private readonly TodoFileReader _fileReader;
     private readonly TodoCommandFileService _commandFileService;
-    private readonly TodoChangeTracker _changeTracker;
+    private readonly AppSettingsService _settingsService;
+    private TodoChangeTracker _changeTracker;
+    private TodoItem _loadedRoot;
+    private string _rootParentDir;
+    private bool _settingsDirty;
 
+    // 画面に表示中のTODO。ロード済みツリー内の任意のノードを指せる(移動リンクで切替可能)。
     [ObservableProperty]
     private TodoItem _selectedTodo;
 
-    // 選択中タブ/子TODO/メモ情報は表示用情報としてTodoItem側で保持する。
-    // ここではSelectedTodoへの委譲プロパティとして公開する。
-    public TodoItem? SelectedChildTodo
+    public TodoNodeViewModel RootNode { get; private set; }
+
+    [ObservableProperty]
+    private TodoNodeViewModel? _childNode;
+
+    // 親TODOへのリンク一覧。遠い祖先→近い親の順に並ぶ。
+    [ObservableProperty]
+    private IReadOnlyList<BreadcrumbEntry> _breadcrumbs = [];
+
+    // 境界のドラッグ操作で変更できる表示比率。⑤アプリ全体設定として保存する。
+    [ObservableProperty]
+    private double _topBottomRatio;
+
+    [ObservableProperty]
+    private double _bottomLeftRightRatio;
+
+    // 下半分の右側(子TODO項目表示時)の内部比率。親TODOの表示割合とは別に保持する。
+    [ObservableProperty]
+    private double _nestedTopBottomRatio;
+
+    [ObservableProperty]
+    private double _nestedLeftRightRatio;
+
+    // ウィンドウサイズ。⑤アプリ全体設定として保存する。
+    [ObservableProperty]
+    private double _windowWidth;
+
+    [ObservableProperty]
+    private double _windowHeight;
+
+    public MainViewModel(TodoFileReader fileReader, TodoCommandFileService commandFileService, AppSettingsService settingsService, AppSettings settings)
     {
-        get => SelectedTodo.SelectedChildTodo;
-        set
-        {
-            if (ReferenceEquals(SelectedTodo.SelectedChildTodo, value))
-                return;
-
-            SelectedTodo.SelectedChildTodo = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public MemoItem? SelectedMemo
-    {
-        get => SelectedTodo.SelectedMemo;
-        set
-        {
-            if (ReferenceEquals(SelectedTodo.SelectedMemo, value))
-                return;
-
-            SelectedTodo.SelectedMemo = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public int SelectedTabIndex
-    {
-        get => SelectedTodo.SelectedTabIndex;
-        set
-        {
-            if (SelectedTodo.SelectedTabIndex == value)
-                return;
-
-            SelectedTodo.SelectedTabIndex = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(IsChildTabSelected));
-            OnPropertyChanged(nameof(IsMemoTabSelected));
-        }
-    }
-
-    public bool IsChildTabSelected => SelectedTabIndex == 0;
-
-    public bool IsMemoTabSelected => SelectedTabIndex == 1;
-
-    public IReadOnlyList<TodoStatus> StatusOptions { get; } = Enum.GetValues<TodoStatus>();
-
-    public MainViewModel(TodoFileReader fileReader, TodoCommandFileService commandFileService, string rootParentDir)
-    {
+        _fileReader = fileReader;
         _commandFileService = commandFileService;
-        _selectedTodo = fileReader.LoadOrCreateRoot(rootParentDir);
+        _settingsService = settingsService;
+        _rootParentDir = settings.RootParentDir;
+        _loadedRoot = fileReader.LoadOrCreateRoot(_rootParentDir);
+        _selectedTodo = _loadedRoot;
 
-        _changeTracker = new TodoChangeTracker(rootParentDir);
-        _changeTracker.Attach(_selectedTodo);
+        _changeTracker = new TodoChangeTracker(_rootParentDir);
+        _changeTracker.Attach(_loadedRoot);
+
+        RootNode = new TodoNodeViewModel(_selectedTodo);
+        RootNode.PropertyChanged += OnRootNodePropertyChanged;
+        RebuildChildNode();
+        RebuildBreadcrumbs();
+
+        _topBottomRatio = settings.TopBottomRatio;
+        _bottomLeftRightRatio = settings.BottomLeftRightRatio;
+        _nestedTopBottomRatio = settings.NestedTopBottomRatio;
+        _nestedLeftRightRatio = settings.NestedLeftRightRatio;
+        _windowWidth = settings.WindowWidth;
+        _windowHeight = settings.WindowHeight;
+    }
+
+    partial void OnTopBottomRatioChanged(double value) => MarkSettingsDirty();
+
+    partial void OnBottomLeftRightRatioChanged(double value) => MarkSettingsDirty();
+
+    partial void OnNestedTopBottomRatioChanged(double value) => MarkSettingsDirty();
+
+    partial void OnNestedLeftRightRatioChanged(double value) => MarkSettingsDirty();
+
+    partial void OnWindowWidthChanged(double value) => MarkSettingsDirty();
+
+    partial void OnWindowHeightChanged(double value) => MarkSettingsDirty();
+
+    private void MarkSettingsDirty() => _settingsDirty = true;
+
+    /// <summary>
+    /// 比率・ウィンドウサイズに変更があれば⑤アプリ全体設定を保存する
+    ///
+    /// 定期保存とアプリ終了時の両方から呼ばれる。
+    /// </summary>
+    public void SaveSettingsIfDirty()
+    {
+        if (!_settingsDirty)
+            return;
+
+        _settingsDirty = false;
+        _settingsService.Save(new AppSettings(
+            _rootParentDir, TopBottomRatio, BottomLeftRightRatio, NestedTopBottomRatio, NestedLeftRightRatio, WindowWidth, WindowHeight));
+    }
+
+    /// <summary>
+    /// パンくずリンクをクリックしたときの遷移
+    ///
+    /// ロード済みツリー内の祖先(TargetTodo)はインメモリで切り替え、
+    /// ツリーの外側(ParentDir)はディスクから読み直す。
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToBreadcrumb(BreadcrumbEntry entry)
+    {
+        if (entry.TargetTodo is { } target)
+        {
+            SelectedTodo = target;
+            return;
+        }
+
+        if (entry.ParentDir is { } parentDir)
+            ReloadFromParentDir(parentDir);
+    }
+
+    /// <summary>
+    /// 子TODO/孫TODOの「移動」リンクから、そのTODOを現在の表示位置へ切り替える
+    ///
+    /// ロード済みツリー内のノードを直接指すだけなので、ディスクの再読込は行わない。
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToChild(TodoItem target) => SelectedTodo = target;
+
+    // ファイルシステムから読み直し、ロード済みツリーを丸ごと差し替える。
+    private void ReloadFromParentDir(string parentDir)
+    {
+        EnqueuePendingChanges();
+
+        var oldRoot = _loadedRoot;
+        _changeTracker.Dispose();
+
+        _rootParentDir = parentDir;
+        _loadedRoot = _fileReader.LoadOrCreateRoot(_rootParentDir);
+        _changeTracker = new TodoChangeTracker(_rootParentDir);
+        _changeTracker.Attach(_loadedRoot);
+
+        SelectedTodo = _loadedRoot;
+        oldRoot.Dispose();
+        MarkSettingsDirty();
+    }
+
+    // SelectedTodoの差し替えに合わせてRootNode/パンくずリストも作り直す。
+    partial void OnSelectedTodoChanged(TodoItem? oldValue, TodoItem newValue)
+    {
+        RootNode.PropertyChanged -= OnRootNodePropertyChanged;
+        RootNode.Dispose();
+        RootNode = new TodoNodeViewModel(newValue);
+        RootNode.PropertyChanged += OnRootNodePropertyChanged;
+        OnPropertyChanged(nameof(RootNode));
+        RebuildChildNode();
+        RebuildBreadcrumbs();
+    }
+
+    // 下半分の右側(子TODO選択時)の孫項目パネル用に、選択中の子TODOをラップし直す。
+    private void OnRootNodePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TodoNodeViewModel.SelectedChildTodo))
+            RebuildChildNode();
+    }
+
+    private void RebuildChildNode()
+    {
+        ChildNode?.Dispose();
+        ChildNode = RootNode.SelectedChildTodo is { } child ? new TodoNodeViewModel(child) : null;
+    }
+
+    // パンくずリストを組み立てる。
+    // ①ファイルシステム上の祖先(ロード済みツリーの外側、フォルダ名の規則+README存在で判定)。
+    // ②インメモリの祖先(ロード済みツリー内、移動リンクで下りてきた分)。
+    // ファイルの中身(本文)は見ない。
+    private void RebuildBreadcrumbs()
+    {
+        var entries = new List<BreadcrumbEntry>();
+        var candidate = _rootParentDir;
+
+        while (TodoFileNaming.ParseTodoFolderName(Path.GetFileName(candidate)) is { } parsed &&
+               File.Exists(Path.Combine(candidate, TodoFileNaming.ReadmeFileName)))
+        {
+            var parentDir = Path.GetDirectoryName(candidate);
+            if (parentDir is null)
+                break;
+
+            entries.Add(new BreadcrumbEntry(parsed.Title ?? Strings.Breadcrumb_NullTitle, TargetTodo: null, parentDir));
+            candidate = parentDir;
+        }
+
+        entries.Reverse();
+
+        var inMemoryAncestors = new List<TodoItem>();
+        for (var current = _changeTracker.GetParent(SelectedTodo); current is not null; current = _changeTracker.GetParent(current))
+        {
+            inMemoryAncestors.Add(current);
+        }
+
+        inMemoryAncestors.Reverse();
+        entries.AddRange(inMemoryAncestors.Select(t => new BreadcrumbEntry(t.DisplayTitle, t, ParentDir: null)));
+
+        Breadcrumbs = entries;
     }
 
     /// <summary>
@@ -93,134 +230,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     // TodoItemツリーの保有者として、購読解除と破棄を行う。
+    // SelectedTodoは移動リンクでツリーの一部を指しているだけの場合があるため、
+    // 破棄は必ずツリー全体の保有者であるLoadedRootに対して行う。
     public void Dispose()
     {
+        ChildNode?.Dispose();
+        RootNode.PropertyChanged -= OnRootNodePropertyChanged;
+        RootNode.Dispose();
         _changeTracker.Dispose();
-        SelectedTodo.Dispose();
+        _loadedRoot.Dispose();
         GC.SuppressFinalize(this);
-    }
-
-    [RelayCommand]
-    private void AddChildTodo()
-    {
-        var item = new TodoItem { IsEditing = true };
-        SelectedTodo.ChildTodoList.Add(item);
-        SelectedChildTodo = item;
-    }
-
-    [RelayCommand]
-    private void DeleteChildTodo() =>
-        DeleteWithConfirm(SelectedChildTodo, SelectedTodo.ChildTodoList, Strings.ConfirmDelete_ChildTodoMessage);
-
-    [RelayCommand]
-    private void AddMemo()
-    {
-        var item = new MemoItem { IsEditing = true };
-        SelectedTodo.MemoList.Add(item);
-        SelectedMemo = item;
-    }
-
-    [RelayCommand]
-    private void DeleteMemo() =>
-        DeleteWithConfirm(SelectedMemo, SelectedTodo.MemoList, Strings.ConfirmDelete_MemoMessage);
-
-    [RelayCommand]
-    private void MoveChildTodoUp() => MoveChildTodo(-1);
-
-    [RelayCommand]
-    private void MoveChildTodoDown() => MoveChildTodo(1);
-
-    [RelayCommand]
-    private void MoveMemoUp() => Move(SelectedTodo.MemoList, SelectedMemo, -1);
-
-    [RelayCommand]
-    private void MoveMemoDown() => Move(SelectedTodo.MemoList, SelectedMemo, 1);
-
-    // 子TODOをメモ情報へ変換する。孫以下も再帰的に平坦化して全てメモにする。
-    [RelayCommand]
-    private void ConvertChildTodoToMemo()
-    {
-        if (SelectedChildTodo is not { } item)
-            return;
-
-        var newMemos = FlattenToMemos(item);
-        SelectedTodo.ChildTodoList.Remove(item);
-        foreach (var memo in newMemos)
-        {
-            SelectedTodo.MemoList.Add(memo);
-        }
-
-        SelectedTabIndex = 1;
-        SelectedMemo = newMemos[0];
-    }
-
-    // メモ情報を子TODOへ変換する。
-    [RelayCommand]
-    private void ConvertMemoToChildTodo()
-    {
-        if (SelectedMemo is not { } memo)
-            return;
-
-        var newItem = new TodoItem { Title = memo.Title, Body = memo.Body };
-        SelectedTodo.MemoList.Remove(memo);
-        SelectedTodo.ChildTodoList.Add(newItem);
-
-        SelectedTabIndex = 0;
-        SelectedChildTodo = newItem;
-    }
-
-    // 自分自身→自分のメモ情報→各子TODO(再帰的に平坦化)の順でメモ化する。
-    private static List<MemoItem> FlattenToMemos(TodoItem item)
-    {
-        var result = new List<MemoItem> { new() { Title = item.Title, Body = item.Body } };
-        result.AddRange(item.MemoList.Select(memo => new MemoItem { Title = memo.Title, Body = memo.Body }));
-        foreach (var child in item.ChildTodoList)
-        {
-            result.AddRange(FlattenToMemos(child));
-        }
-
-        return result;
-    }
-
-    // 子TODOは自動ソート優先のため、ステータスが同じ項目同士でしか入れ替えない。
-    private void MoveChildTodo(int delta)
-    {
-        var list = SelectedTodo.ChildTodoList;
-        var item = SelectedChildTodo;
-        if (item is null)
-            return;
-
-        var oldIndex = list.IndexOf(item);
-        var newIndex = oldIndex + delta;
-        if (oldIndex < 0 || newIndex < 0 || newIndex >= list.Count)
-            return;
-
-        if (list[oldIndex].Status != list[newIndex].Status)
-            return;
-
-        list.Move(oldIndex, newIndex);
-    }
-
-    private static void Move<T>(ObservableCollection<T> list, T? item, int delta)
-    {
-        if (item is null)
-            return;
-
-        var oldIndex = list.IndexOf(item);
-        var newIndex = oldIndex + delta;
-        if (oldIndex < 0 || newIndex < 0 || newIndex >= list.Count)
-            return;
-
-        list.Move(oldIndex, newIndex);
-    }
-
-    private static void DeleteWithConfirm<T>(T? item, ObservableCollection<T> list, string message)
-    {
-        if (item is null)
-            return;
-
-        var result = MessageBox.Show(message, Strings.ConfirmDelete_Title, MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (result == MessageBoxResult.Yes)
-            list.Remove(item);
     }
 }

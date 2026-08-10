@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using TodoApp.Models.Enums;
 
 namespace TodoApp.Views;
@@ -16,6 +17,10 @@ public partial class TodoDetailEditor : UserControl
         nameof(Title), typeof(string), typeof(TodoDetailEditor),
         new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+    // タイトルがnullの間、フォーカスが無いときに代わりに表示する文字列(本文の1行目)。
+    public static readonly DependencyProperty DisplayTitleProperty = DependencyProperty.Register(
+        nameof(DisplayTitle), typeof(string), typeof(TodoDetailEditor), new PropertyMetadata(string.Empty));
+
     public static readonly DependencyProperty BodyProperty = DependencyProperty.Register(
         nameof(Body), typeof(string), typeof(TodoDetailEditor),
         new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
@@ -30,6 +35,18 @@ public partial class TodoDetailEditor : UserControl
     public static readonly DependencyProperty ShowStatusProperty = DependencyProperty.Register(
         nameof(ShowStatus), typeof(bool), typeof(TodoDetailEditor), new PropertyMetadata(true));
 
+    // 孫項目詳細(TODO項目)でのみ使う、子TODOの完了数/総数。nullなら非表示。
+    public static readonly DependencyProperty ChildCountTextProperty = DependencyProperty.Register(
+        nameof(ChildCountText), typeof(string), typeof(TodoDetailEditor), new PropertyMetadata(null));
+
+    // 選択中の子TODO/孫TODOの詳細でのみ使う、現在の表示位置への切替リンク。
+    // Commandがnullならリンクを表示しない(共通の親TODO自身の詳細では使わない)。
+    public static readonly DependencyProperty NavigateCommandProperty = DependencyProperty.Register(
+        nameof(NavigateCommand), typeof(ICommand), typeof(TodoDetailEditor));
+
+    public static readonly DependencyProperty NavigateTargetProperty = DependencyProperty.Register(
+        nameof(NavigateTarget), typeof(object), typeof(TodoDetailEditor));
+
     public TodoDetailEditor()
     {
         InitializeComponent();
@@ -39,6 +56,12 @@ public partial class TodoDetailEditor : UserControl
     {
         get => (string?)GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
+    }
+
+    public string DisplayTitle
+    {
+        get => (string)GetValue(DisplayTitleProperty);
+        set => SetValue(DisplayTitleProperty, value);
     }
 
     public string Body
@@ -63,5 +86,23 @@ public partial class TodoDetailEditor : UserControl
     {
         get => (bool)GetValue(ShowStatusProperty);
         set => SetValue(ShowStatusProperty, value);
+    }
+
+    public string? ChildCountText
+    {
+        get => (string?)GetValue(ChildCountTextProperty);
+        set => SetValue(ChildCountTextProperty, value);
+    }
+
+    public ICommand? NavigateCommand
+    {
+        get => (ICommand?)GetValue(NavigateCommandProperty);
+        set => SetValue(NavigateCommandProperty, value);
+    }
+
+    public object? NavigateTarget
+    {
+        get => GetValue(NavigateTargetProperty);
+        set => SetValue(NavigateTargetProperty, value);
     }
 }

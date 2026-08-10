@@ -8,180 +8,140 @@
         xmlns:resx="clr-namespace:TodoApp.Resources"
         xmlns:behaviors="clr-namespace:TodoApp.Behaviors"
         xmlns:views="clr-namespace:TodoApp.Views"
+        xmlns:conv="clr-namespace:TodoApp.Converters"
+        xmlns:vm="clr-namespace:TodoApp.ViewModels"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="{x:Static resx:Strings.WindowTitle}"
-        Height="{x:Static styles:LayoutConstants.WindowHeight}"
-        Width="{x:Static styles:LayoutConstants.WindowWidth}"
+        Height="{Binding WindowHeight, Mode=TwoWay}"
+        Width="{Binding WindowWidth, Mode=TwoWay}"
         MinHeight="{x:Static styles:LayoutConstants.WindowMinHeight}"
         MinWidth="{x:Static styles:LayoutConstants.WindowMinWidth}">
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-
-        <!-- 子TODOリストのアイテムテンプレート -->
-        <!-- 通常はテキスト表示、右クリック「編集」でTextBoxに切り替える -->
-        <DataTemplate x:Key="ChildTodoItemTemplate">
-            <Grid>
-                <TextBlock x:Name="DisplayText"
-                           Text="{Binding DisplayTitle}"
-                           Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                           Tag="{Binding DataContext.ConvertChildTodoToMemoCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                    <TextBlock.ContextMenu>
-                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Header="{x:Static resx:Strings.Menu_Edit}"
-                                      Command="{Binding StartEditCommand}" />
-                            <MenuItem Header="{x:Static resx:Strings.Menu_ConvertToMemo}"
-                                      Command="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        </ContextMenu>
-                    </TextBlock.ContextMenu>
-                </TextBlock>
-                <TextBox x:Name="EditBox"
-                         Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                         Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                         HorizontalAlignment="Stretch"
-                         BorderThickness="0" Background="Transparent"
-                         Visibility="Collapsed"
-                         behaviors:FocusBehavior.IsFocused="{Binding IsEditing}">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="LostFocus">
-                            <i:InvokeCommandAction Command="{Binding EndEditCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </TextBox>
-            </Grid>
-            <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding IsEditing}" Value="True">
-                    <Setter TargetName="DisplayText" Property="Visibility" Value="Collapsed" />
-                    <Setter TargetName="EditBox" Property="Visibility" Value="Visible" />
-                </DataTrigger>
-            </DataTemplate.Triggers>
-        </DataTemplate>
-
-        <!-- メモ情報リストのアイテムテンプレート -->
-        <DataTemplate x:Key="MemoItemTemplate">
-            <Grid>
-                <TextBlock x:Name="DisplayText"
-                           Text="{Binding DisplayTitle}"
-                           Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                           Tag="{Binding DataContext.ConvertMemoToChildTodoCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                    <TextBlock.ContextMenu>
-                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Header="{x:Static resx:Strings.Menu_Edit}"
-                                      Command="{Binding StartEditCommand}" />
-                            <MenuItem Header="{x:Static resx:Strings.Menu_ConvertToChildTodo}"
-                                      Command="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        </ContextMenu>
-                    </TextBlock.ContextMenu>
-                </TextBlock>
-                <TextBox x:Name="EditBox"
-                         Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                         Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                         HorizontalAlignment="Stretch"
-                         BorderThickness="0" Background="Transparent"
-                         Visibility="Collapsed"
-                         behaviors:FocusBehavior.IsFocused="{Binding IsEditing}">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="LostFocus">
-                            <i:InvokeCommandAction Command="{Binding EndEditCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </TextBox>
-            </Grid>
-            <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding IsEditing}" Value="True">
-                    <Setter TargetName="DisplayText" Property="Visibility" Value="Collapsed" />
-                    <Setter TargetName="EditBox" Property="Visibility" Value="Visible" />
-                </DataTrigger>
-            </DataTemplate.Triggers>
-        </DataTemplate>
-
-        <Style x:Key="StretchListBoxItemStyle" TargetType="ListBoxItem">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/CommonStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <conv:RatioToGridLengthConverter x:Key="RatioToGridLengthConverter" />
+        </ResourceDictionary>
     </Window.Resources>
     <Grid Margin="{x:Static styles:LayoutConstants.RootMargin}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="{Binding TopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+            <RowDefinition Height="{x:Static styles:LayoutConstants.SplitterThickness}" />
+            <RowDefinition Height="{Binding TopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
         </Grid.RowDefinitions>
 
+        <!-- パンくずリスト : 親TODOへのリンク。祖先が無ければ何も表示しない。 -->
+        <ItemsControl Grid.Row="0" Margin="{x:Static styles:LayoutConstants.FieldSpacing}"
+                      ItemsSource="{Binding Breadcrumbs}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="{Binding Label}" Style="{StaticResource LinkButtonStyle}"
+                                Command="{Binding DataContext.NavigateToBreadcrumbCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}" />
+                        <TextBlock Text=" / " />
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
         <!-- 上半分 : タイトル/ステータス/本文 -->
-        <views:TodoDetailEditor Grid.Row="0" Margin="{x:Static styles:LayoutConstants.SectionSpacing}"
+        <views:TodoDetailEditor Grid.Row="1" Margin="{x:Static styles:LayoutConstants.SectionSpacing}"
                                  Title="{Binding SelectedTodo.Title}"
+                                 DisplayTitle="{Binding SelectedTodo.DisplayTitle}"
                                  Status="{Binding SelectedTodo.Status}"
                                  Body="{Binding SelectedTodo.Body}"
-                                 StatusOptions="{Binding StatusOptions}"
+                                 StatusOptions="{x:Static vm:TodoNodeViewModel.StatusOptions}"
                                  ShowStatus="True" />
 
+        <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                      ResizeDirection="Rows" Background="Transparent" />
+
         <!-- 下半分 : 左側(子TODO/メモ情報の一覧) / 右側(選択項目の詳細) -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="{x:Static styles:LayoutConstants.BottomLeftColumnWidth}" />
-                <ColumnDefinition Width="{x:Static styles:LayoutConstants.BottomRightColumnWidth}" />
+                <ColumnDefinition Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+                <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
+                <ColumnDefinition Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
             </Grid.ColumnDefinitions>
 
-            <TabControl Grid.Column="0" SelectedIndex="{Binding SelectedTabIndex}">
-                <TabItem Header="{x:Static resx:Strings.Tab_ChildTodo}">
-                    <DockPanel Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
-                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
-                                    Margin="{x:Static styles:LayoutConstants.ButtonRowSpacing}">
-                            <Button Content="{x:Static resx:Strings.Button_Add}"
-                                    Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
-                                    Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
-                                    Command="{Binding AddChildTodoCommand}" />
-                            <Button Content="{x:Static resx:Strings.Button_Delete}"
-                                    Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
-                                    Command="{Binding DeleteChildTodoCommand}" />
-                        </StackPanel>
-                        <ListBox x:Name="ChildTodoListBox"
-                                 ItemsSource="{Binding SelectedTodo.ChildTodoList}"
-                                 SelectedItem="{Binding SelectedChildTodo}"
-                                 ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
-                                 ItemTemplate="{StaticResource ChildTodoItemTemplate}">
-                            <ListBox.InputBindings>
-                                <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveChildTodoUpCommand}" />
-                                <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveChildTodoDownCommand}" />
-                            </ListBox.InputBindings>
-                        </ListBox>
-                    </DockPanel>
-                </TabItem>
-                <TabItem Header="{x:Static resx:Strings.Tab_Memo}">
-                    <DockPanel Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
-                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
-                                    Margin="{x:Static styles:LayoutConstants.ButtonRowSpacing}">
-                            <Button Content="{x:Static resx:Strings.Button_Add}"
-                                    Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
-                                    Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
-                                    Command="{Binding AddMemoCommand}" />
-                            <Button Content="{x:Static resx:Strings.Button_Delete}"
-                                    Padding="{x:Static styles:LayoutConstants.ButtonPadding}"
-                                    Command="{Binding DeleteMemoCommand}" />
-                        </StackPanel>
-                        <ListBox x:Name="MemoListBox"
-                                 ItemsSource="{Binding SelectedTodo.MemoList}"
-                                 SelectedItem="{Binding SelectedMemo}"
-                                 ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
-                                 ItemTemplate="{StaticResource MemoItemTemplate}">
-                            <ListBox.InputBindings>
-                                <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveMemoUpCommand}" />
-                                <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveMemoDownCommand}" />
-                            </ListBox.InputBindings>
-                        </ListBox>
-                    </DockPanel>
-                </TabItem>
-            </TabControl>
+            <views:TodoListPanel Grid.Column="0" DataContext="{Binding RootNode}"
+                                 NavigateToChildCommand="{Binding DataContext.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
 
-            <!-- 下半分の右側 : 選択中の子TODO/メモ情報の詳細(孫項目リストは未実装) -->
-            <Grid Grid.Column="1" Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
-                <views:TodoDetailEditor Visibility="{Binding IsChildTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                         Title="{Binding SelectedChildTodo.Title}"
-                                         Status="{Binding SelectedChildTodo.Status}"
-                                         Body="{Binding SelectedChildTodo.Body}"
-                                         StatusOptions="{Binding StatusOptions}"
-                                         ShowStatus="True" />
-                <views:TodoDetailEditor Visibility="{Binding IsMemoTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                         Title="{Binding SelectedMemo.Title}"
-                                         Body="{Binding SelectedMemo.Body}"
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          ResizeDirection="Columns" Background="Transparent" />
+
+            <!-- 下半分の右側 : 選択中の子TODO(孫項目パネル込み)/メモ情報の詳細 -->
+            <Grid Grid.Column="2" Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
+                <!-- 子TODOタブ選択時 : 画面全体と同様に、上にタイトル・左下に孫項目リスト・右下に孫項目詳細を表示する。 -->
+                <Grid Visibility="{Binding RootNode.IsChildTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="{Binding NestedTopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+                        <RowDefinition Height="{x:Static styles:LayoutConstants.SplitterThickness}" />
+                        <RowDefinition Height="{Binding NestedTopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+                    </Grid.RowDefinitions>
+
+                    <views:TodoDetailEditor Grid.Row="0" Margin="{x:Static styles:LayoutConstants.SectionSpacing}"
+                                             Title="{Binding RootNode.SelectedChildTodo.Title}"
+                                             DisplayTitle="{Binding RootNode.SelectedChildTodo.DisplayTitle}"
+                                             Status="{Binding RootNode.SelectedChildTodo.Status}"
+                                             Body="{Binding RootNode.SelectedChildTodo.Body}"
+                                             StatusOptions="{x:Static vm:TodoNodeViewModel.StatusOptions}"
+                                             ShowStatus="True"
+                                             NavigateCommand="{Binding NavigateToChildCommand}"
+                                             NavigateTarget="{Binding RootNode.SelectedChildTodo}" />
+
+                    <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  ResizeDirection="Rows" Background="Transparent" />
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+                            <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
+                            <ColumnDefinition Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+                        </Grid.ColumnDefinitions>
+
+                        <views:TodoListPanel Grid.Column="0" DataContext="{Binding ChildNode}"
+                                             NavigateToChildCommand="{Binding DataContext.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+
+                        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                      ResizeDirection="Columns" Background="Transparent" />
+
+                        <!-- 孫項目詳細 : TODO項目は完了数/総数も表示し、これ以上は再帰しない簡易表示に留める。 -->
+                        <Grid Grid.Column="2" Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
+                            <views:TodoDetailEditor Visibility="{Binding ChildNode.IsChildTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                     Title="{Binding ChildNode.SelectedChildTodo.Title}"
+                                                     DisplayTitle="{Binding ChildNode.SelectedChildTodo.DisplayTitle}"
+                                                     Status="{Binding ChildNode.SelectedChildTodo.Status}"
+                                                     Body="{Binding ChildNode.SelectedChildTodo.Body}"
+                                                     ChildCountText="{Binding ChildNode.SelectedChildTodo.ChildCountText}"
+                                                     StatusOptions="{x:Static vm:TodoNodeViewModel.StatusOptions}"
+                                                     ShowStatus="True"
+                                                     NavigateCommand="{Binding NavigateToChildCommand}"
+                                                     NavigateTarget="{Binding ChildNode.SelectedChildTodo}" />
+                            <views:TodoDetailEditor Visibility="{Binding ChildNode.IsMemoTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                     Title="{Binding ChildNode.SelectedMemo.Title}"
+                                                     DisplayTitle="{Binding ChildNode.SelectedMemo.DisplayTitle}"
+                                                     Body="{Binding ChildNode.SelectedMemo.Body}"
+                                                     ShowStatus="False" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <!-- メモ情報タブ選択時 -->
+                <views:TodoDetailEditor Visibility="{Binding RootNode.IsMemoTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                         Title="{Binding RootNode.SelectedMemo.Title}"
+                                         DisplayTitle="{Binding RootNode.SelectedMemo.DisplayTitle}"
+                                         Body="{Binding RootNode.SelectedMemo.Body}"
                                          ShowStatus="False" />
             </Grid>
         </Grid>

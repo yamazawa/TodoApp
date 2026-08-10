@@ -23,6 +23,5 @@ public static class LayoutConstants
     public static readonly Thickness ButtonPadding = new(8, 2, 8, 2);
     public static readonly Thickness ButtonSpacing = new(0, 0, 4, 0);
 
-    public static readonly GridLength BottomLeftColumnWidth = new(2, GridUnitType.Star);
-    public static readonly GridLength BottomRightColumnWidth = new(8, GridUnitType.Star);
+    public static readonly GridLength SplitterThickness = new(4);
 }
