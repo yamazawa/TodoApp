@@ -93,6 +93,15 @@
         <Style x:Key="StretchListBoxItemStyle" TargetType="ListBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
+
+        <!-- 完了済みの子TODOは背景を薄いグレーにする。 -->
+        <Style x:Key="ChildTodoListBoxItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource StretchListBoxItemStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="Done">
+                    <Setter Property="Background" Value="LightGray" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <TabControl SelectedIndex="{Binding SelectedTabIndex}">
@@ -117,7 +126,7 @@
                 <ListBox x:Name="ChildTodoListBox"
                          ItemsSource="{Binding Node.ChildTodoList}"
                          SelectedItem="{Binding SelectedChildTodo}"
-                         ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
+                         ItemContainerStyle="{StaticResource ChildTodoListBoxItemStyle}"
                          ItemTemplate="{StaticResource ChildTodoItemTemplate}">
                     <ListBox.InputBindings>
                         <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveChildTodoUpCommand}" />
