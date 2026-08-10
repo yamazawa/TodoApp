@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:styles="clr-namespace:TodoApp.Styles"
              xmlns:conv="clr-namespace:TodoApp.Converters"
+             xmlns:resx="clr-namespace:TodoApp.Resources"
              mc:Ignorable="d"
              x:Name="Root">
     <UserControl.Resources>
@@ -21,29 +22,41 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="{x:Static styles:LayoutConstants.FieldSpacing}">
-            <!-- タイトルがnullかつ未フォーカス時は、本文の1行目を濃いグレーで代わりに表示する。 -->
-            <TextBox x:Name="TitleTextBox"
-                     Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                     Text="{Binding Title, ElementName=Root, Converter={StaticResource EmptyStringToNullConverter}, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBlock IsHitTestVisible="False"
-                       Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                       Foreground="DarkGray"
-                       Text="{Binding DisplayTitle, ElementName=Root}">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Visibility" Value="Collapsed" />
-                        <Style.Triggers>
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding Title, ElementName=Root}" Value="{x:Null}" />
-                                    <Condition Binding="{Binding IsFocused, ElementName=TitleTextBox}" Value="False" />
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="Visibility" Value="Visible" />
-                            </MultiDataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <!-- タイトルがnullかつ未フォーカス時は、本文の1行目を濃いグレーで代わりに表示する。 -->
+                <TextBox x:Name="TitleTextBox"
+                         Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+                         Text="{Binding Title, ElementName=Root, Converter={StaticResource EmptyStringToNullConverter}, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock IsHitTestVisible="False"
+                           Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+                           Foreground="DarkGray"
+                           Text="{Binding DisplayTitle, ElementName=Root}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding Title, ElementName=Root}" Value="{x:Null}" />
+                                        <Condition Binding="{Binding IsFocused, ElementName=TitleTextBox}" Value="False" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+            <!-- 選択中の子TODO/孫TODOの詳細でのみ使う、現在の表示位置への切替リンク。 -->
+            <Button Grid.Column="1" Style="{StaticResource LinkButtonStyle}"
+                    Content="{x:Static resx:Strings.NavigateLink}"
+                    Command="{Binding NavigateCommand, ElementName=Root}"
+                    CommandParameter="{Binding NavigateTarget, ElementName=Root}"
+                    Visibility="{Binding NavigateCommand, ElementName=Root, Converter={StaticResource NullToVisibilityConverter}}" />
         </Grid>
         <ComboBox Grid.Row="1" Margin="{x:Static styles:LayoutConstants.FieldSpacing}"
                   MinWidth="100" HorizontalAlignment="Left"

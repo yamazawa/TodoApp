@@ -40,9 +40,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <Button Content="{Binding Label}"
-                                Padding="0" BorderThickness="0" Background="Transparent"
-                                Foreground="Blue" Cursor="Hand"
+                        <Button Content="{Binding Label}" Style="{StaticResource LinkButtonStyle}"
                                 Command="{Binding DataContext.NavigateToBreadcrumbCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                 CommandParameter="{Binding}" />
                         <TextBlock Text=" / " />
@@ -93,7 +91,9 @@
                                              Status="{Binding RootNode.SelectedChildTodo.Status}"
                                              Body="{Binding RootNode.SelectedChildTodo.Body}"
                                              StatusOptions="{x:Static vm:TodoNodeViewModel.StatusOptions}"
-                                             ShowStatus="True" />
+                                             ShowStatus="True"
+                                             NavigateCommand="{Binding NavigateToChildCommand}"
+                                             NavigateTarget="{Binding RootNode.SelectedChildTodo}" />
 
                     <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                   ResizeDirection="Rows" Background="Transparent" />
@@ -120,7 +120,9 @@
                                                      Body="{Binding ChildNode.SelectedChildTodo.Body}"
                                                      ChildCountText="{Binding ChildNode.SelectedChildTodo.ChildCountText}"
                                                      StatusOptions="{x:Static vm:TodoNodeViewModel.StatusOptions}"
-                                                     ShowStatus="True" />
+                                                     ShowStatus="True"
+                                                     NavigateCommand="{Binding NavigateToChildCommand}"
+                                                     NavigateTarget="{Binding ChildNode.SelectedChildTodo}" />
                             <views:TodoDetailEditor Visibility="{Binding ChildNode.IsMemoTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                      Title="{Binding ChildNode.SelectedMemo.Title}"
                                                      DisplayTitle="{Binding ChildNode.SelectedMemo.DisplayTitle}"

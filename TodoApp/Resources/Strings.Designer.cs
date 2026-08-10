@@ -125,20 +125,11 @@ namespace TodoApp.Resources {
         }
 
         /// <summary>
-        ///   移動 に類似しているローカライズされた文字列を検索します。
+        ///   リンク に類似しているローカライズされた文字列を検索します。
         /// </summary>
-        public static string Menu_Move {
+        public static string NavigateLink {
             get {
-                return ResourceManager.GetString("Menu_Move", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   移動 に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string Button_Move {
-            get {
-                return ResourceManager.GetString("Button_Move", resourceCulture);
+                return ResourceManager.GetString("NavigateLink", resourceCulture);
             }
         }
 

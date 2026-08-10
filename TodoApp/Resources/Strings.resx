@@ -104,10 +104,7 @@
   <data name="Breadcrumb_NullTitle" xml:space="preserve">
     <value>(タイトルなし)</value>
   </data>
-  <data name="Menu_Move" xml:space="preserve">
-    <value>移動</value>
-  </data>
-  <data name="Button_Move" xml:space="preserve">
-    <value>移動</value>
+  <data name="NavigateLink" xml:space="preserve">
+    <value>リンク</value>
   </data>
 </root>

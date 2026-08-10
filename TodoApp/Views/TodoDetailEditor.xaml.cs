@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using TodoApp.Models.Enums;
 
 namespace TodoApp.Views;
@@ -37,6 +38,14 @@ public partial class TodoDetailEditor : UserControl
     // 孫項目詳細(TODO項目)でのみ使う、子TODOの完了数/総数。nullなら非表示。
     public static readonly DependencyProperty ChildCountTextProperty = DependencyProperty.Register(
         nameof(ChildCountText), typeof(string), typeof(TodoDetailEditor), new PropertyMetadata(null));
+
+    // 選択中の子TODO/孫TODOの詳細でのみ使う、現在の表示位置への切替リンク。
+    // Commandがnullならリンクを表示しない(共通の親TODO自身の詳細では使わない)。
+    public static readonly DependencyProperty NavigateCommandProperty = DependencyProperty.Register(
+        nameof(NavigateCommand), typeof(ICommand), typeof(TodoDetailEditor));
+
+    public static readonly DependencyProperty NavigateTargetProperty = DependencyProperty.Register(
+        nameof(NavigateTarget), typeof(object), typeof(TodoDetailEditor));
 
     public TodoDetailEditor()
     {
@@ -83,5 +92,17 @@ public partial class TodoDetailEditor : UserControl
     {
         get => (string?)GetValue(ChildCountTextProperty);
         set => SetValue(ChildCountTextProperty, value);
+    }
+
+    public ICommand? NavigateCommand
+    {
+        get => (ICommand?)GetValue(NavigateCommandProperty);
+        set => SetValue(NavigateCommandProperty, value);
+    }
+
+    public object? NavigateTarget
+    {
+        get => GetValue(NavigateTargetProperty);
+        set => SetValue(NavigateTargetProperty, value);
     }
 }
