@@ -12,4 +12,6 @@ public sealed record AppSettings(
     double TopBottomRatio = 0.5,
     double BottomLeftRightRatio = 0.2,
     double NestedTopBottomRatio = 0.5,
-    double NestedLeftRightRatio = 0.2);
+    double NestedLeftRightRatio = 0.2,
+    double WindowWidth = Styles.LayoutConstants.WindowWidth,
+    double WindowHeight = Styles.LayoutConstants.WindowHeight);

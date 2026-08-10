@@ -38,6 +38,13 @@ public class TodoChangeTracker : IDisposable
     }
 
     /// <summary>
+    /// 監視中のツリー内での親を返す
+    ///
+    /// ルート自身、または監視対象外の場合はnullを返す。
+    /// </summary>
+    public TodoItem? GetParent(TodoItem item) => _parentOf.GetValueOrDefault(item);
+
+    /// <summary>
     /// dirtyな項目を取り出し、NodeSyncTaskへ変換して返す
     ///
     /// 親→子の順で処理されるよう、木の深さ順に並べる。

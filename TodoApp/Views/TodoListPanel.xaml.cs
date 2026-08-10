@@ -1,4 +1,6 @@
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace TodoApp.Views;
 
@@ -10,8 +12,19 @@ namespace TodoApp.Views;
 /// </summary>
 public partial class TodoListPanel : UserControl
 {
+    // 子TODOの「移動」リンク用。MainViewModel側のコマンドを外部から設定する。
+    // ContextMenu(別ツリー)からはPlacementTarget.Tag経由でRootごと参照して辿り着く。
+    public static readonly DependencyProperty NavigateToChildCommandProperty = DependencyProperty.Register(
+        nameof(NavigateToChildCommand), typeof(ICommand), typeof(TodoListPanel));
+
     public TodoListPanel()
     {
         InitializeComponent();
+    }
+
+    public ICommand? NavigateToChildCommand
+    {
+        get => (ICommand?)GetValue(NavigateToChildCommandProperty);
+        set => SetValue(NavigateToChildCommandProperty, value);
     }
 }

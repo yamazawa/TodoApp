@@ -13,8 +13,8 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="{x:Static resx:Strings.WindowTitle}"
-        Height="{x:Static styles:LayoutConstants.WindowHeight}"
-        Width="{x:Static styles:LayoutConstants.WindowWidth}"
+        Height="{Binding WindowHeight, Mode=TwoWay}"
+        Width="{Binding WindowWidth, Mode=TwoWay}"
         MinHeight="{x:Static styles:LayoutConstants.WindowMinHeight}"
         MinWidth="{x:Static styles:LayoutConstants.WindowMinWidth}">
     <Window.Resources>
@@ -43,8 +43,8 @@
                         <Button Content="{Binding Label}"
                                 Padding="0" BorderThickness="0" Background="Transparent"
                                 Foreground="Blue" Cursor="Hand"
-                                Command="{Binding DataContext.NavigateToParentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                CommandParameter="{Binding ParentDir}" />
+                                Command="{Binding DataContext.NavigateToBreadcrumbCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}" />
                         <TextBlock Text=" / " />
                     </StackPanel>
                 </DataTemplate>
@@ -71,7 +71,8 @@
                 <ColumnDefinition Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
             </Grid.ColumnDefinitions>
 
-            <views:TodoListPanel Grid.Column="0" DataContext="{Binding RootNode}" />
+            <views:TodoListPanel Grid.Column="0" DataContext="{Binding RootNode}"
+                                 NavigateToChildCommand="{Binding DataContext.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
 
             <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           ResizeDirection="Columns" Background="Transparent" />
@@ -104,7 +105,8 @@
                             <ColumnDefinition Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
                         </Grid.ColumnDefinitions>
 
-                        <views:TodoListPanel Grid.Column="0" DataContext="{Binding ChildNode}" />
+                        <views:TodoListPanel Grid.Column="0" DataContext="{Binding ChildNode}"
+                                             NavigateToChildCommand="{Binding DataContext.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
 
                         <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                       ResizeDirection="Columns" Background="Transparent" />

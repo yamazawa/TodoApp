@@ -125,6 +125,24 @@ namespace TodoApp.Resources {
         }
 
         /// <summary>
+        ///   移動 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_Move {
+            get {
+                return ResourceManager.GetString("Menu_Move", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   移動 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Button_Move {
+            get {
+                return ResourceManager.GetString("Button_Move", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   メモ情報へ変換 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Menu_ConvertToMemo {
