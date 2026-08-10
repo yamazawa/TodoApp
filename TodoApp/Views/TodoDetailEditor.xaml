@@ -9,10 +9,15 @@
              mc:Ignorable="d"
              x:Name="Root">
     <UserControl.Resources>
-        <conv:TodoStatusToStringConverter x:Key="TodoStatusToStringConverter" />
-        <conv:EmptyStringToNullConverter x:Key="EmptyStringToNullConverter" />
-        <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/CommonStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <conv:TodoStatusToStringConverter x:Key="TodoStatusToStringConverter" />
+            <conv:EmptyStringToNullConverter x:Key="EmptyStringToNullConverter" />
+            <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
