@@ -29,9 +29,9 @@
     <Grid Margin="{x:Static styles:LayoutConstants.RootMargin}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="{Binding TopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+            <RowDefinition x:Name="TopRow" Height="{Binding TopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
             <RowDefinition Height="{x:Static styles:LayoutConstants.SplitterThickness}" />
-            <RowDefinition Height="{Binding TopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+            <RowDefinition x:Name="BottomRow" Height="{Binding TopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
         </Grid.RowDefinitions>
 
         <!-- パンくずリスト : 親TODOへのリンク。祖先が無ければ何も表示しない。 -->
@@ -64,30 +64,32 @@
                                  ShowStatus="True" />
 
         <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                      ResizeDirection="Rows" Background="Transparent" />
+                      ResizeDirection="Rows" Background="Transparent"
+                      DragDelta="TopBottomSplitter_DragDelta" />
 
         <!-- 下半分 : 左側(子TODO/メモ情報の一覧) / 右側(選択項目の詳細) -->
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+                <ColumnDefinition x:Name="LeftColumn" Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
                 <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
-                <ColumnDefinition Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+                <ColumnDefinition x:Name="RightColumn" Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
             </Grid.ColumnDefinitions>
 
             <views:TodoListPanel Grid.Column="0" DataContext="{Binding RootNode}"
                                  NavigateToChildCommand="{Binding DataContext.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
 
             <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                          ResizeDirection="Columns" Background="Transparent" />
+                          ResizeDirection="Columns" Background="Transparent"
+                          DragDelta="BottomLeftRightSplitter_DragDelta" />
 
             <!-- 下半分の右側 : 選択中の子TODO(孫項目パネル込み)/メモ情報の詳細 -->
             <Grid Grid.Column="2" Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
                 <!-- 子TODOタブ選択時 : 画面全体と同様に、上にタイトル・左下に孫項目リスト・右下に孫項目詳細を表示する。 -->
                 <Grid Visibility="{Binding RootNode.IsChildTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="{Binding NestedTopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+                        <RowDefinition x:Name="NestedTopRow" Height="{Binding NestedTopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
                         <RowDefinition Height="{x:Static styles:LayoutConstants.SplitterThickness}" />
-                        <RowDefinition Height="{Binding NestedTopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+                        <RowDefinition x:Name="NestedBottomRow" Height="{Binding NestedTopBottomRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
                     </Grid.RowDefinitions>
 
                     <views:TodoDetailEditor Grid.Row="0" Margin="{x:Static styles:LayoutConstants.SectionSpacing}"
@@ -101,20 +103,22 @@
                                              NavigateTarget="{Binding RootNode.SelectedChildTodo}" />
 
                     <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                  ResizeDirection="Rows" Background="Transparent" />
+                                  ResizeDirection="Rows" Background="Transparent"
+                                  DragDelta="NestedTopBottomSplitter_DragDelta" />
 
                     <Grid Grid.Row="2">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
+                            <ColumnDefinition x:Name="NestedLeftColumn" Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
                             <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
-                            <ColumnDefinition Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+                            <ColumnDefinition x:Name="NestedRightColumn" Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
                         </Grid.ColumnDefinitions>
 
                         <views:TodoListPanel Grid.Column="0" DataContext="{Binding ChildNode}"
                                              NavigateToChildCommand="{Binding DataContext.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
 
                         <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                      ResizeDirection="Columns" Background="Transparent" />
+                                      ResizeDirection="Columns" Background="Transparent"
+                                      DragDelta="NestedLeftRightSplitter_DragDelta" />
 
                         <!-- 孫項目詳細 : TODO項目は完了数/総数も表示し、これ以上は再帰しない簡易表示に留める。 -->
                         <Grid Grid.Column="2" Margin="{x:Static styles:LayoutConstants.TabContentMargin}">

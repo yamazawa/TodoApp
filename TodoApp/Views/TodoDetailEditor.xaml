@@ -35,7 +35,21 @@
                 <!-- タイトルがnullかつ未フォーカス時は、本文の1行目を濃いグレーで代わりに表示する。 -->
                 <TextBox x:Name="TitleTextBox"
                          Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                         Text="{Binding Title, ElementName=Root, Converter={StaticResource EmptyStringToNullConverter}, UpdateSourceTrigger=PropertyChanged}" />
+                         Text="{Binding Title, ElementName=Root, Converter={StaticResource EmptyStringToNullConverter}, UpdateSourceTrigger=PropertyChanged}">
+                    <!-- 進行中のTODOはタイトル欄の背景を薄い黄色に、完了済みは薄いグレーにする。 -->
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status, ElementName=Root}" Value="InProgress">
+                                    <Setter Property="Background" Value="LightYellow" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status, ElementName=Root}" Value="Done">
+                                    <Setter Property="Background" Value="LightGray" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
                 <TextBlock IsHitTestVisible="False"
                            Padding="{x:Static styles:LayoutConstants.ControlPadding}"
                            Foreground="DarkGray"

@@ -19,9 +19,11 @@ public static class LayoutConstants
     public static readonly Thickness FieldSpacing = new(0, 0, 0, 4);
     public static readonly Thickness ControlPadding = new(4);
     public static readonly Thickness TabContentMargin = new(4);
-    public static readonly Thickness ButtonRowSpacing = new(0, 4, 0, 0);
-    public static readonly Thickness ButtonPadding = new(8, 2, 8, 2);
-    public static readonly Thickness ButtonSpacing = new(0, 0, 4, 0);
 
     public static readonly GridLength SplitterThickness = new(4);
+
+    // 境界ドラッグで変更できる比率の上下限。0または1に張り付いて
+    // 反対側が消えてしまわないよう、両端に最低限の余地を残す。
+    public const double MinSplitRatio = 0.05;
+    public const double MaxSplitRatio = 1 - MinSplitRatio;
 }
