@@ -5,4 +5,4 @@ namespace TodoApp.Services;
 ///
 /// 選択中の子TODO/メモ情報は、参照ではなくインデックスで保持する。
 /// </summary>
-public sealed record TodoSaveInfo(int SelectedTabIndex, int? SelectedChildIndex, int? SelectedMemoIndex);
+public sealed record TodoSaveInfo(int SelectedTabIndex, int? SelectedChildIndex, int? SelectedMemoIndex, double? ListWidth);

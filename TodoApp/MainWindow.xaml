@@ -6,11 +6,7 @@
         xmlns:local="clr-namespace:TodoApp"
         xmlns:styles="clr-namespace:TodoApp.Styles"
         xmlns:resx="clr-namespace:TodoApp.Resources"
-        xmlns:behaviors="clr-namespace:TodoApp.Behaviors"
         xmlns:views="clr-namespace:TodoApp.Views"
-        xmlns:conv="clr-namespace:TodoApp.Converters"
-        xmlns:vm="clr-namespace:TodoApp.ViewModels"
-        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="{x:Static resx:Strings.WindowTitle}"
         Height="{Binding WindowHeight, Mode=TwoWay}"
@@ -18,13 +14,7 @@
         MinHeight="{x:Static styles:LayoutConstants.WindowMinHeight}"
         MinWidth="{x:Static styles:LayoutConstants.WindowMinWidth}">
     <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Styles/CommonStyles.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <conv:RatioToGridLengthConverter x:Key="RatioToGridLengthConverter" />
-        </ResourceDictionary>
+        <ResourceDictionary Source="/Styles/CommonStyles.xaml" />
     </Window.Resources>
     <Grid Margin="{x:Static styles:LayoutConstants.RootMargin}">
         <Grid.RowDefinitions>
@@ -52,68 +42,6 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <!-- 左側(子TODO/メモ情報の一覧) / 右側(選択項目の詳細) -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftColumn" Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
-                <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
-                <ColumnDefinition x:Name="RightColumn" Width="{Binding BottomLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
-            </Grid.ColumnDefinitions>
-
-            <views:TodoListPanel Grid.Column="0" DataContext="{Binding RootNode}"
-                                 NavigateToChildCommand="{Binding DataContext.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
-
-            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                          ResizeDirection="Columns" Background="Transparent"
-                          DragDelta="BottomLeftRightSplitter_DragDelta" />
-
-            <!-- 右側 : 選択中の子TODO(孫項目パネル込み)/メモ情報の詳細 -->
-            <Grid Grid.Column="2" Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
-                <!-- 子TODOタブ選択時 : 左に孫項目リスト、右に孫項目詳細を表示する。 -->
-                <Grid Visibility="{Binding RootNode.IsChildTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition x:Name="NestedLeftColumn" Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}}" />
-                        <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
-                        <ColumnDefinition x:Name="NestedRightColumn" Width="{Binding NestedLeftRightRatio, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
-                    </Grid.ColumnDefinitions>
-
-                    <views:TodoListPanel Grid.Column="0" DataContext="{Binding ChildNode}"
-                                         NavigateToChildCommand="{Binding DataContext.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
-
-                    <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                  ResizeDirection="Columns" Background="Transparent"
-                                  DragDelta="NestedLeftRightSplitter_DragDelta" />
-
-                    <!-- 孫項目詳細 : TODO項目はタイトルと完了数のみの簡易表示に留める(これ以上は再帰しない)。 -->
-                    <!-- ステータスはリスト側の背景色で確認する。 -->
-                    <Grid Grid.Column="2" Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
-                        <StackPanel Visibility="{Binding ChildNode.IsChildTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <Grid Margin="{x:Static styles:LayoutConstants.FieldSpacing}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                                           Text="{Binding ChildNode.SelectedChildTodo.Title}" />
-                                <Button Grid.Column="1" Style="{StaticResource LinkButtonStyle}"
-                                        Content="{x:Static resx:Strings.NavigateLink}"
-                                        Command="{Binding NavigateToChildCommand}"
-                                        CommandParameter="{Binding ChildNode.SelectedChildTodo}" />
-                            </Grid>
-                            <TextBlock Margin="{x:Static styles:LayoutConstants.FieldSpacing}"
-                                       Text="{Binding ChildNode.SelectedChildTodo.ChildCountText}" />
-                        </StackPanel>
-                        <views:TodoDetailEditor Visibility="{Binding ChildNode.IsMemoTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                 Title="{Binding ChildNode.SelectedMemo.Title}"
-                                                 Body="{Binding ChildNode.SelectedMemo.Body}" />
-                    </Grid>
-                </Grid>
-
-                <!-- メモ情報タブ選択時 -->
-                <views:TodoDetailEditor Visibility="{Binding RootNode.IsMemoTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                         Title="{Binding RootNode.SelectedMemo.Title}"
-                                         Body="{Binding RootNode.SelectedMemo.Body}" />
-            </Grid>
-        </Grid>
+        <views:TodoFramePanel Grid.Row="1" DataContext="{Binding RootNode}" />
     </Grid>
 </Window>

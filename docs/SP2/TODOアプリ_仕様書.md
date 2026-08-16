@@ -135,6 +135,8 @@
   指定可能にする
 - iniファイルは`%AppData%\TodoApp\`に配置する
   (settings.jsonと同じフォルダ)
+- Debug実行時は`%AppData%\TodoApp_Debug\`に分ける
+  (開発中の動作確認が本番データに影響しないようにするため)
 
 # D. その他
 

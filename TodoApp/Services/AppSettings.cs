@@ -4,12 +4,9 @@ namespace TodoApp.Services;
 /// ⑤アプリ全体設定のシリアライズ用DTO
 ///
 /// TODO単位ではなく、アプリ全体で1つ保持する。
-/// 比率は各境界のドラッグ操作で変更でき、変更のたびに保存する。
-/// NestedLeftRightRatioは右側(子TODO項目表示時)の内部比率。
+/// リストの表示横幅はTODO単位の④保存情報(TodoSaveInfo.ListWidth)で保持する。
 /// </summary>
 public sealed record AppSettings(
     string RootParentDir,
-    double BottomLeftRightRatio = 0.2,
-    double NestedLeftRightRatio = 0.2,
     double WindowWidth = Styles.LayoutConstants.WindowWidth,
     double WindowHeight = Styles.LayoutConstants.WindowHeight);

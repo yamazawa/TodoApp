@@ -61,11 +61,11 @@
   <data name="WindowTitle" xml:space="preserve">
     <value>TODOアプリ</value>
   </data>
-  <data name="Tab_ChildTodo" xml:space="preserve">
-    <value>子TODO</value>
+  <data name="Tab_TodoList" xml:space="preserve">
+    <value>TODO</value>
   </data>
-  <data name="Tab_Memo" xml:space="preserve">
-    <value>メモ情報</value>
+  <data name="Tab_NoteList" xml:space="preserve">
+    <value>NOTE</value>
   </data>
   <data name="Button_Add" xml:space="preserve">
     <value>追加</value>
@@ -118,5 +118,11 @@
   </data>
   <data name="Menu_AdvanceToDone" xml:space="preserve">
     <value>完了に変更</value>
+  </data>
+  <data name="Button_AddTodoList" xml:space="preserve">
+    <value>TODOリストを追加</value>
+  </data>
+  <data name="Button_ConvertToMemoList" xml:space="preserve">
+    <value>メモ情報をリスト化</value>
   </data>
 </root>
