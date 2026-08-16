@@ -12,6 +12,13 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <conv:RatioToGridLengthConverter x:Key="RatioToGridLengthConverter" />
+
+        <!-- 自分自身を直接ネストするとXAML解析時に無限生成されるため、 -->
+        <!-- ContentTemplate経由でChildNode選択時にのみ遅延生成する。 -->
+        <!-- テンプレート内はElementNameのスコープが別になるためRelativeSourceで親を辿る。 -->
+        <DataTemplate x:Key="ChildFrameTemplate">
+            <views:TodoFramePanel BottomLeftRightRatio="{Binding BottomLeftRightRatio, RelativeSource={RelativeSource AncestorType=views:TodoFramePanel}}" />
+        </DataTemplate>
     </UserControl.Resources>
     <Grid>
         <!-- 状況① : 子TODO0件、メモ1件 → リストなしで選択中メモを直接表示する。 -->
@@ -50,9 +57,9 @@
                                          Title="{Binding SelectedMemo.Title}"
                                          Body="{Binding SelectedMemo.Body}" />
                 <!-- TODOリスト選択時(状況③)、選択中TODOを本レイアウトで再帰的に表示する。 -->
-                <views:TodoFramePanel Visibility="{Binding ShowChildFrame, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                     DataContext="{Binding ChildNode}"
-                                     BottomLeftRightRatio="{Binding BottomLeftRightRatio, ElementName=Root}" />
+                <ContentControl Visibility="{Binding ShowChildFrame, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Content="{Binding ChildNode}"
+                                ContentTemplate="{StaticResource ChildFrameTemplate}" />
             </Grid>
         </Grid>
     </Grid>
