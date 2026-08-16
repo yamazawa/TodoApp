@@ -44,9 +44,12 @@
                           ResizeDirection="Columns" Background="Transparent"
                           DragDelta="ListDetailSplitter_DragDelta" />
 
-            <Grid Grid.Column="2" Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
+            <!-- Marginは付けない(再帰するたびに積み重なって縦幅が縮んでしまうため)。 -->
+            <!-- 余白が必要なメモ表示側にだけ個別に付ける。 -->
+            <Grid Grid.Column="2">
                 <!-- NOTEリスト選択時(状況③)、または状況②で常に、選択中メモを表示する。 -->
-                <views:TodoDetailEditor Visibility="{Binding ShowMemoDetail, Converter={StaticResource BooleanToVisibilityConverter}}"
+                <views:TodoDetailEditor Margin="{x:Static styles:LayoutConstants.TabContentMargin}"
+                                         Visibility="{Binding ShowMemoDetail, Converter={StaticResource BooleanToVisibilityConverter}}"
                                          Title="{Binding SelectedMemo.Title}"
                                          Body="{Binding SelectedMemo.Body}" />
                 <!-- TODOリスト選択時(状況③)、選択中TODOを本レイアウトで再帰的に表示する。 -->
