@@ -204,5 +204,14 @@ namespace TodoApp.Resources {
                 return ResourceManager.GetString("WindowTitle", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   開く に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_Open {
+            get {
+                return ResourceManager.GetString("Menu_Open", resourceCulture);
+            }
+        }
     }
 }

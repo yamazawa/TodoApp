@@ -27,6 +27,13 @@ public class TodoCommandFileService
     public void Enqueue(NodeSyncTask task) => _channel.Writer.TryWrite(task);
 
     /// <summary>
+    /// 直近で書き込んだTODOフォルダのパスを取得する
+    ///
+    /// まだ一度も書き込まれていない場合はnullを返す。
+    /// </summary>
+    public string? TryGetPath(TodoItem item) => _lastKnownPath.TryGetValue(item, out var path) ? path : null;
+
+    /// <summary>
     /// キューに積まれた書き込みを全て終えるまで待つ
     ///
     /// アプリ終了時に、これ以上Enqueueしないことを確定させてから呼ぶ。
