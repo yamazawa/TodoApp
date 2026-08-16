@@ -29,6 +29,7 @@
                        Height="{x:Static styles:LayoutConstants.StatusIconSize}"
                        Margin="{x:Static styles:LayoutConstants.StatusIconMargin}"
                        VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality"
                        Source="{Binding Status, Converter={StaticResource TodoStatusToIconConverter}}"
                        Tag="{Binding ElementName=Root}">
                     <Image.InputBindings>
