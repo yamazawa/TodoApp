@@ -19,6 +19,7 @@ public static class LayoutConstants
     public static readonly Thickness FieldSpacing = new(0, 0, 0, 4);
     public static readonly Thickness ControlPadding = new(4);
     public static readonly Thickness TabContentMargin = new(4);
+    public static readonly Thickness ButtonSpacing = new(0, 0, 8, 0);
 
     public static readonly GridLength SplitterThickness = new(4);
 

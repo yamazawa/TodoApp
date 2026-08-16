@@ -15,7 +15,7 @@ namespace TodoApp.ViewModels;
 /// <summary>
 /// 1件のTodoItem(ノード)に対する子TODO/メモ情報の操作をまとめたViewModel
 ///
-/// メイン画面のルート、右側(子TODO表示時)の孫項目パネルの両方から使い回す。
+/// 自己参照可能で、選択中の子TODOをChildNodeとして持つ(TodoFramePanelでの再帰表示用)。
 /// 保有者がNodeとは別に生成・破棄する(Nodeそのものの破棄は行わない)。
 /// </summary>
 public partial class TodoNodeViewModel : ObservableObject, IDisposable
@@ -37,6 +37,7 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
             Node.SelectedChildTodo = value;
             OnPropertyChanged();
             NotifyChildTodoCommands();
+            RebuildChildNode();
         }
     }
 
@@ -66,6 +67,8 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsChildTabSelected));
             OnPropertyChanged(nameof(IsMemoTabSelected));
+            OnPropertyChanged(nameof(ShowMemoDetail));
+            OnPropertyChanged(nameof(ShowChildFrame));
         }
     }
 
@@ -73,10 +76,32 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
     public bool IsMemoTabSelected => SelectedTabIndex == 1;
 
-    // タブ見出し。子TODOは完了数/総数、メモ情報は総数を添える。
-    public string ChildTabHeader => $"{Strings.Tab_ChildTodo}({Node.ChildTodoList.Count(c => c.Status == TodoStatus.Done)}/{Node.ChildTodoList.Count})";
+    // リスト表示の簡略化(状況①②③)の判定に使う。
+    // 状況① : 子TODO0件、メモ1件 → リスト自体を表示しない。
+    public bool HasChildTodo => Node.ChildTodoList.Count > 0;
 
-    public string MemoTabHeader => $"{Strings.Tab_Memo}({Node.MemoList.Count})";
+    public bool HasMultipleMemos => Node.MemoList.Count > 1;
+
+    public bool IsListless => !HasChildTodo && !HasMultipleMemos;
+
+    public bool HasList => !IsListless;
+
+    // 状況② : 子TODO0件、メモ2件以上 → タブ無しでメモ情報リストのみを表示する。
+    public bool IsMemoListOnly => !HasChildTodo;
+
+    // 右側(詳細)の表示切り替え。状況②は常にメモ、状況③は選択中タブに従う。
+    public bool ShowMemoDetail => IsMemoListOnly || IsMemoTabSelected;
+
+    public bool ShowChildFrame => HasChildTodo && IsChildTabSelected;
+
+    // 選択中の子TODOをラップしたノード。TODOリスト選択時の再帰表示(TodoFramePanel)に使う。
+    [ObservableProperty]
+    private TodoNodeViewModel? _childNode;
+
+    // タブ見出し。子TODOは完了数/総数、メモ情報は総数を添える。
+    public string ChildTabHeader => $"{Strings.Tab_TodoList}({Node.ChildTodoList.Count(c => c.Status == TodoStatus.Done)}/{Node.ChildTodoList.Count})";
+
+    public string MemoTabHeader => $"{Strings.Tab_NoteList}({Node.MemoList.Count})";
 
     public TodoNodeViewModel(TodoItem node, TodoCommandFileService commandFileService)
     {
@@ -84,25 +109,36 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         _commandFileService = commandFileService;
         Node.ChildTodoList.CollectionChanged += OnChildTodoListChanged;
         Node.MemoList.CollectionChanged += OnMemoListChanged;
+        RebuildChildNode();
     }
 
-    // このViewModelが追加した購読のみ解除する。Node自体の破棄は保有者の責務。
+    // このViewModelが追加した購読・ChildNodeを解放する。Node自体の破棄は保有者の責務。
     public void Dispose()
     {
         Node.ChildTodoList.CollectionChanged -= OnChildTodoListChanged;
         Node.MemoList.CollectionChanged -= OnMemoListChanged;
+        ChildNode?.Dispose();
         GC.SuppressFinalize(this);
     }
 
     private void OnChildTodoListChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         OnPropertyChanged(nameof(ChildTabHeader));
+        OnPropertyChanged(nameof(HasChildTodo));
+        OnPropertyChanged(nameof(IsListless));
+        OnPropertyChanged(nameof(HasList));
+        OnPropertyChanged(nameof(IsMemoListOnly));
+        OnPropertyChanged(nameof(ShowMemoDetail));
+        OnPropertyChanged(nameof(ShowChildFrame));
         NotifyChildTodoCommands();
     }
 
     private void OnMemoListChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         OnPropertyChanged(nameof(MemoTabHeader));
+        OnPropertyChanged(nameof(HasMultipleMemos));
+        OnPropertyChanged(nameof(IsListless));
+        OnPropertyChanged(nameof(HasList));
         NotifyMemoCommands();
     }
 
@@ -126,12 +162,14 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         OpenMemoCommand.NotifyCanExecuteChanged();
     }
 
+    // 状況①からTODOリストを追加し、状況③へ遷移する。追加項目をすぐ編集できるようタブを合わせる。
     [RelayCommand(CanExecute = nameof(CanAddChildTodo))]
     private void AddChildTodo()
     {
         var item = TodoItem.CreateNew();
         item.IsEditing = true;
         Node.AddChild(item);
+        SelectedTabIndex = 0;
         SelectedChildTodo = item;
     }
 
@@ -150,8 +188,11 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteChildTodo))]
-    private void DeleteChildTodo() =>
-        DeleteWithConfirm(SelectedChildTodo, Node.ChildTodoList, Strings.ConfirmDelete_ChildTodoMessage);
+    private void DeleteChildTodo()
+    {
+        if (DeleteWithConfirm(SelectedChildTodo, Node.ChildTodoList, Strings.ConfirmDelete_ChildTodoMessage))
+            SelectedChildTodo = null;
+    }
 
     private bool CanDeleteChildTodo() => SelectedChildTodo is not null;
 
@@ -166,8 +207,11 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
     private bool CanAddMemo() => Node.MemoList.Count < TodoFileNaming.MaxItemCount;
 
     [RelayCommand(CanExecute = nameof(CanDeleteMemo))]
-    private void DeleteMemo() =>
-        DeleteWithConfirm(SelectedMemo, Node.MemoList, Strings.ConfirmDelete_MemoMessage);
+    private void DeleteMemo()
+    {
+        if (DeleteWithConfirm(SelectedMemo, Node.MemoList, Strings.ConfirmDelete_MemoMessage))
+            SelectedMemo = null;
+    }
 
     // メモ情報リストは最低1件を保持するため、2件以上のときのみ削除できる。
     private bool CanDeleteMemo() => SelectedMemo is not null && Node.MemoList.Count > 1;
@@ -228,6 +272,7 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
         var newMemos = FlattenToMemos(item);
         Node.ChildTodoList.Remove(item);
+        SelectedChildTodo = null;
         foreach (var memo in newMemos)
         {
             Node.MemoList.Add(memo);
@@ -248,6 +293,7 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
         var newItem = new TodoItem { Title = memo.Title };
         Node.MemoList.Remove(memo);
+        SelectedMemo = null;
         newItem.MemoList.Add(memo);
         Node.AddChild(newItem);
 
@@ -255,7 +301,6 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         SelectedChildTodo = newItem;
     }
 
-    // メモ情報リストは最低1件を保持するため、2件以上のときのみ変換できる。
     private bool CanConvertMemoToChildTodo() => SelectedMemo is not null && Node.MemoList.Count > 1;
 
     // 自分のメモ情報→各子TODO(再帰的に平坦化)の順でメモ化する。
@@ -316,13 +361,23 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         return (oldIndex, newIndex);
     }
 
-    private static void DeleteWithConfirm<T>(T? item, ObservableCollection<T> list, string message)
+    private static bool DeleteWithConfirm<T>(T? item, ObservableCollection<T> list, string message)
     {
         if (item is null)
-            return;
+            return false;
 
         var result = MessageBox.Show(message, Strings.ConfirmDelete_Title, MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (result == MessageBoxResult.Yes)
-            list.Remove(item);
+        if (result != MessageBoxResult.Yes)
+            return false;
+
+        list.Remove(item);
+        return true;
+    }
+
+    // TODOリスト選択時の再帰表示(TodoFramePanel)用に、選択中の子TODOをラップし直す。
+    private void RebuildChildNode()
+    {
+        ChildNode?.Dispose();
+        ChildNode = SelectedChildTodo is { } child ? new TodoNodeViewModel(child, _commandFileService) : null;
     }
 }
