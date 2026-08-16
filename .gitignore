@@ -482,3 +482,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# アイコンの元画像(ビルドに不要な作業用ファイル)
+image/元画像/
