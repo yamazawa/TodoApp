@@ -6,7 +6,7 @@ namespace TodoApp.Services;
 /// <summary>
 /// ⑤アプリ全体設定を読み書きするサービス
 ///
-/// %AppData%\TodoApp\settings.json に保存する。
+/// %AppData%\TodoApp(_Debug)\settings.json に保存する。
 /// TODOツリー本体とは別のフォルダで管理する。
 /// </summary>
 public class AppSettingsService
@@ -15,7 +15,7 @@ public class AppSettingsService
 
     public AppSettingsService()
     {
-        var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TodoApp");
+        var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppDataPaths.FolderName);
         Directory.CreateDirectory(dir);
         _settingsPath = Path.Combine(dir, "settings.json");
     }
