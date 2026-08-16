@@ -9,8 +9,8 @@ WPF (.NET) + MVVM (CommunityToolkit.Mvvm) で作成する階層型TODO管理デ�
 
 初期仕様(クローズ済み、実装に反映済み)は以下を参照してください。
 
-- `docs/archive/TODOアプリ_仕様書.md`
-- `docs/archive/TODOアプリ_実装方針.md`
+- `docs/archive/SP1/TODOアプリ_仕様書.md`
+- `docs/archive/SP1/TODOアプリ_実装方針.md`
 
 ## 動作環境
 
