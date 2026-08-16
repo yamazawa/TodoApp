@@ -194,6 +194,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             entries.Add(new BreadcrumbEntry(memo.Title, TargetTodo: null, ParentDir: null));
         }
 
+        if (entries.Count > 0)
+            entries[^1] = entries[^1] with { IsLast = true };
+
         UpdateDisplayedChainSubscriptions(displayedChain, displayedMemo);
         Breadcrumbs = entries;
     }

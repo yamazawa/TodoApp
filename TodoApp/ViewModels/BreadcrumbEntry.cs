@@ -14,4 +14,9 @@ public sealed record BreadcrumbEntry(string Label, TodoItem? TargetTodo, string?
     public bool IsLink => TargetTodo is not null || ParentDir is not null;
 
     public bool IsCurrent => !IsLink;
+
+    // 末尾の項目かどうか。末尾の後には区切り(" / ")を表示しない。
+    public bool IsLast { get; init; }
+
+    public bool ShowSeparator => !IsLast;
 }

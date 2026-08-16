@@ -44,7 +44,8 @@
                                 Visibility="{Binding IsLink, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         <TextBlock Text="{Binding Label}"
                                    Visibility="{Binding IsCurrent, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                        <TextBlock Text=" / " />
+                        <TextBlock Text=" / "
+                                   Visibility="{Binding ShowSeparator, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
