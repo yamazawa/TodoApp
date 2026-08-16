@@ -27,6 +27,34 @@
                             <MenuItem Header="{x:Static resx:Strings.NavigateLink}"
                                       Command="{Binding Path=PlacementTarget.Tag.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding}" />
+                            <MenuItem Header="{x:Static resx:Strings.Menu_AdvanceToInProgress}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.AdvanceChildTodoStatusCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="{Binding}">
+                                <MenuItem.Style>
+                                    <Style TargetType="MenuItem">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Status}" Value="NotStarted">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </MenuItem.Style>
+                            </MenuItem>
+                            <MenuItem Header="{x:Static resx:Strings.Menu_AdvanceToDone}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.AdvanceChildTodoStatusCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="{Binding}">
+                                <MenuItem.Style>
+                                    <Style TargetType="MenuItem">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Status}" Value="InProgress">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </MenuItem.Style>
+                            </MenuItem>
                             <MenuItem Header="{x:Static resx:Strings.Menu_ConvertToMemo}"
                                       Command="{Binding Path=PlacementTarget.Tag.DataContext.ConvertChildTodoToMemoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <MenuItem Header="{x:Static resx:Strings.Button_Delete}"

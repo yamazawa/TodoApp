@@ -222,5 +222,23 @@ namespace TodoApp.Resources {
                 return ResourceManager.GetString("MemoTitle_Readme", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   対応中に変更 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_AdvanceToInProgress {
+            get {
+                return ResourceManager.GetString("Menu_AdvanceToInProgress", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   完了に変更 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_AdvanceToDone {
+            get {
+                return ResourceManager.GetString("Menu_AdvanceToDone", resourceCulture);
+            }
+        }
     }
 }

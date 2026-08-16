@@ -113,4 +113,10 @@
   <data name="MemoTitle_Readme" xml:space="preserve">
     <value>README</value>
   </data>
+  <data name="Menu_AdvanceToInProgress" xml:space="preserve">
+    <value>対応中に変更</value>
+  </data>
+  <data name="Menu_AdvanceToDone" xml:space="preserve">
+    <value>完了に変更</value>
+  </data>
 </root>
