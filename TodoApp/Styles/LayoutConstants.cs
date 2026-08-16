@@ -23,7 +23,7 @@ public static class LayoutConstants
 
     public static readonly GridLength SplitterThickness = new(4);
 
-    // リスト/詳細の境界ドラッグで確保する、左右それぞれの最小横幅。
-    // タブ見出し(TODO/NOTE)2つが1行に収まる幅を確保する。
-    public const double MinSplitPaneWidth = 120;
+    // ドラッグ操作を終えた位置が、null(自動サイズ)時の横幅とこの範囲内なら
+    // nullに丸めて、以後も内容に合わせた自動サイズを保つ。
+    public const double ListWidthSnapTolerance = 3;
 }

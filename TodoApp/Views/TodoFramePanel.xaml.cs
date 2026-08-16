@@ -68,15 +68,28 @@ public partial class TodoFramePanel : UserControl
     // リストの表示横幅を、自分自身(このTODO)の表示用情報として更新する。
     // GridSplitterはドラッグ中に隣接するColumnDefinitionのWidthを直接書き換えるが、
     // その値をそのまま拾うと不正確なため、実際のActualWidthから計算し直す。
+    // ドラッグ操作自体には最小幅を設けない(0~合計幅の範囲で自由に変更できる)。
     private void ListDetailSplitter_DragDelta(object sender, DragDeltaEventArgs e)
     {
         if (_viewModel is null)
             return;
 
         var total = LeftColumn.ActualWidth + RightColumn.ActualWidth;
-        var maxWidth = System.Math.Max(LayoutConstants.MinSplitPaneWidth, total - LayoutConstants.MinSplitPaneWidth);
-        var width = System.Math.Clamp(LeftColumn.ActualWidth + e.HorizontalChange, LayoutConstants.MinSplitPaneWidth, maxWidth);
+        var width = System.Math.Clamp(LeftColumn.ActualWidth + e.HorizontalChange, 0, total);
         if (double.IsFinite(width))
             _viewModel.ListWidth = width;
+    }
+
+    // ドラッグを終えた位置が、null(自動サイズ)時に計算される幅と近ければnullに丸める。
+    // 以後も内容(タブ・リスト項目)に合わせた自動サイズを保つ。
+    private void ListDetailSplitter_DragCompleted(object sender, DragCompletedEventArgs e)
+    {
+        if (_viewModel?.ListWidth is not { } currentWidth)
+            return;
+
+        ListPanel.Measure(new Size(double.PositiveInfinity, ListPanel.ActualHeight));
+        var naturalWidth = ListPanel.DesiredSize.Width;
+        if (System.Math.Abs(currentWidth - naturalWidth) <= LayoutConstants.ListWidthSnapTolerance)
+            _viewModel.ListWidth = null;
     }
 }

@@ -31,18 +31,21 @@
         <Grid Visibility="{Binding HasList, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <!-- リストは表示横幅(TODO単位の表示情報)を優先し、nullなら内容に合わせて自動サイズにする。 -->
-                <ColumnDefinition x:Name="LeftColumn" MinWidth="{x:Static styles:LayoutConstants.MinSplitPaneWidth}"
+                <!-- Auto(=null)は無限幅で測るため、タブ2つ・リスト項目のテキストが -->
+                <!-- 見切れない幅に自然と収まる。ドラッグ操作では最小幅を設けない。 -->
+                <ColumnDefinition x:Name="LeftColumn"
                                   Width="{Binding ListWidth, Converter={StaticResource ListWidthToGridLengthConverter}}" />
                 <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
-                <ColumnDefinition x:Name="RightColumn" MinWidth="{x:Static styles:LayoutConstants.MinSplitPaneWidth}" Width="*" />
+                <ColumnDefinition x:Name="RightColumn" Width="*" />
             </Grid.ColumnDefinitions>
 
-            <views:TodoListPanel Grid.Column="0" DataContext="{Binding}"
+            <views:TodoListPanel x:Name="ListPanel" Grid.Column="0" DataContext="{Binding}"
                                  NavigateToChildCommand="{Binding DataContext.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
 
             <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           ResizeDirection="Columns" Background="Transparent"
-                          DragDelta="ListDetailSplitter_DragDelta" />
+                          DragDelta="ListDetailSplitter_DragDelta"
+                          DragCompleted="ListDetailSplitter_DragCompleted" />
 
             <!-- Marginは付けない(再帰するたびに積み重なって縦幅が縮んでしまうため)。 -->
             <!-- 余白が必要なメモ表示側にだけ個別に付ける。 -->
