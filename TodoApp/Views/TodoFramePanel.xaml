@@ -51,7 +51,10 @@
                                          Body="{Binding SelectedMemo.Body}" />
                 <!-- TODOリスト選択時(状況③)、選択中TODOを本レイアウトで再帰的に表示する。 -->
                 <!-- 子パネルの生成・破棄はコードビハインドでDispatcher遅延して行う(TodoFramePanel.xaml.cs参照)。 -->
+                <!-- 階層を重ねても縦幅が縮まないよう、明示的にStretchを指定する。 -->
                 <ContentControl x:Name="ChildFrameHost"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                                 Visibility="{Binding ShowChildFrame, Converter={StaticResource BooleanToVisibilityConverter}}" />
             </Grid>
         </Grid>

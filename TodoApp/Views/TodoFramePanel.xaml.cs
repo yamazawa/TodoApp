@@ -57,7 +57,12 @@ public partial class TodoFramePanel : UserControl
         if (ChildFrameHost.Content is TodoFramePanel { DataContext: var current } && ReferenceEquals(current, childNode))
             return;
 
-        ChildFrameHost.Content = new TodoFramePanel { DataContext = childNode };
+        ChildFrameHost.Content = new TodoFramePanel
+        {
+            DataContext = childNode,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
     }
 
     // リストの表示横幅を、自分自身(このTODO)の表示用情報として更新する。
