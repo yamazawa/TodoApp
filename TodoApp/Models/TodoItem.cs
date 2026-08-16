@@ -31,6 +31,10 @@ public partial class TodoItem : TitledItem
     [ObservableProperty]
     private MemoItem? _selectedMemo;
 
+    // リストの表示横幅。nullの場合は内容に合わせて自動サイズにする。
+    [ObservableProperty]
+    private double? _listWidth;
+
     public ObservableCollection<MemoItem> MemoList { get; } = [];
 
     public ObservableCollection<TodoItem> ChildTodoList { get; } = [];

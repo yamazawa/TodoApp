@@ -11,7 +11,7 @@
              x:Name="Root">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <conv:RatioToGridLengthConverter x:Key="RatioToGridLengthConverter" />
+        <conv:ListWidthToGridLengthConverter x:Key="ListWidthToGridLengthConverter" />
     </UserControl.Resources>
     <Grid>
         <!-- 状況① : 子TODO0件、メモ1件 → リストなしで選択中メモを直接表示する。 -->
@@ -30,11 +30,11 @@
         <!-- 状況②③ : 左にリスト、右に詳細(または再帰的なTODOリスト表示)。 -->
         <Grid Visibility="{Binding HasList, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftColumn"
-                                  Width="{Binding BottomLeftRightRatio, ElementName=Root, Converter={StaticResource RatioToGridLengthConverter}}" />
+                <!-- リストは表示横幅(TODO単位の表示情報)を優先し、nullなら内容に合わせて自動サイズにする。 -->
+                <ColumnDefinition x:Name="LeftColumn" MinWidth="{x:Static styles:LayoutConstants.MinSplitPaneWidth}"
+                                  Width="{Binding ListWidth, Converter={StaticResource ListWidthToGridLengthConverter}}" />
                 <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
-                <ColumnDefinition x:Name="RightColumn"
-                                  Width="{Binding BottomLeftRightRatio, ElementName=Root, Converter={StaticResource RatioToGridLengthConverter}, ConverterParameter=Invert}" />
+                <ColumnDefinition x:Name="RightColumn" MinWidth="{x:Static styles:LayoutConstants.MinSplitPaneWidth}" Width="*" />
             </Grid.ColumnDefinitions>
 
             <views:TodoListPanel Grid.Column="0" DataContext="{Binding}"

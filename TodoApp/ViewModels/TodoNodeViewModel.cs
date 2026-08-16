@@ -55,6 +55,20 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         }
     }
 
+    // リストの表示横幅。nullの場合は内容に合わせて自動サイズにする(TodoFramePanelが解釈する)。
+    public double? ListWidth
+    {
+        get => Node.ListWidth;
+        set
+        {
+            if (Node.ListWidth == value)
+                return;
+
+            Node.ListWidth = value;
+            OnPropertyChanged();
+        }
+    }
+
     public int SelectedTabIndex
     {
         get => Node.SelectedTabIndex;

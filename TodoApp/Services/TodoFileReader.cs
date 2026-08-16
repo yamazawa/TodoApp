@@ -75,6 +75,8 @@ public class TodoFileReader
 
             if (info.SelectedMemoIndex is { } memoIndex && memoIndex >= 0 && memoIndex < todo.MemoList.Count)
                 todo.SelectedMemo = todo.MemoList[memoIndex];
+
+            todo.ListWidth = info.ListWidth;
         }
         catch (JsonException)
         {

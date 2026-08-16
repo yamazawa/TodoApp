@@ -32,11 +32,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private IReadOnlyList<BreadcrumbEntry> _breadcrumbs = [];
 
-    // 境界のドラッグ操作で変更できる表示比率。⑤アプリ全体設定として保存する。
-    // 再帰の深さに関わらず、全階層で1つの値を共有する。
-    [ObservableProperty]
-    private double _bottomLeftRightRatio;
-
     // ウィンドウサイズ。⑤アプリ全体設定として保存する。
     [ObservableProperty]
     private double _windowWidth;
@@ -59,12 +54,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         RootNode = new TodoNodeViewModel(_selectedTodo, _commandFileService);
         RebuildBreadcrumbs();
 
-        _bottomLeftRightRatio = settings.BottomLeftRightRatio;
         _windowWidth = settings.WindowWidth;
         _windowHeight = settings.WindowHeight;
     }
-
-    partial void OnBottomLeftRightRatioChanged(double value) => MarkSettingsDirty();
 
     partial void OnWindowWidthChanged(double value) => MarkSettingsDirty();
 
@@ -73,7 +65,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void MarkSettingsDirty() => _settingsDirty = true;
 
     /// <summary>
-    /// 比率・ウィンドウサイズに変更があれば⑤アプリ全体設定を保存する
+    /// ウィンドウサイズに変更があれば⑤アプリ全体設定を保存する
     ///
     /// 定期保存とアプリ終了時の両方から呼ばれる。
     /// </summary>
@@ -83,7 +75,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             return;
 
         _settingsDirty = false;
-        _settingsService.Save(new AppSettings(_rootParentDir, BottomLeftRightRatio, WindowWidth, WindowHeight));
+        _settingsService.Save(new AppSettings(_rootParentDir, WindowWidth, WindowHeight));
     }
 
     /// <summary>

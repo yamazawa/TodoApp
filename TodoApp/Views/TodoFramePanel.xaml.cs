@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
 using System.Windows.Threading;
 using TodoApp.Styles;
 using TodoApp.ViewModels;
@@ -18,23 +17,12 @@ namespace TodoApp.Views;
 /// </summary>
 public partial class TodoFramePanel : UserControl
 {
-    // ColumnDefinitionはビジュアルツリーに属さないためRelativeSourceで
-    // MainViewModelへ直接到達できない。DPとして親から伝播させる。
-    public static readonly DependencyProperty BottomLeftRightRatioProperty = DependencyProperty.Register(
-        nameof(BottomLeftRightRatio), typeof(double), typeof(TodoFramePanel), new PropertyMetadata(0.2));
-
     private TodoNodeViewModel? _viewModel;
 
     public TodoFramePanel()
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
-    }
-
-    public double BottomLeftRightRatio
-    {
-        get => (double)GetValue(BottomLeftRightRatioProperty);
-        set => SetValue(BottomLeftRightRatioProperty, value);
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -69,26 +57,21 @@ public partial class TodoFramePanel : UserControl
         if (ChildFrameHost.Content is TodoFramePanel { DataContext: var current } && ReferenceEquals(current, childNode))
             return;
 
-        var panel = new TodoFramePanel { DataContext = childNode };
-        panel.SetBinding(BottomLeftRightRatioProperty, new Binding(nameof(BottomLeftRightRatio)) { Source = this });
-        ChildFrameHost.Content = panel;
+        ChildFrameHost.Content = new TodoFramePanel { DataContext = childNode };
     }
 
-    // 境界ドラッグの比率は、再帰の深さに関わらず1つの設定(MainViewModel)を共有する。
-    // 計算方法はMainWindow.xaml.csと同様、ActualWidthから比率を計算し直す。
-    private void ListDetailSplitter_DragDelta(object sender, DragDeltaEventArgs e) =>
-        UpdateRatio(LeftColumn.ActualWidth, RightColumn.ActualWidth, e.HorizontalChange, ratio => MainViewModel.BottomLeftRightRatio = ratio);
-
-    private MainViewModel MainViewModel => (MainViewModel)Window.GetWindow(this)!.DataContext;
-
-    private static void UpdateRatio(double beforeSize, double afterSize, double delta, Action<double> setRatio)
+    // リストの表示横幅を、自分自身(このTODO)の表示用情報として更新する。
+    // GridSplitterはドラッグ中に隣接するColumnDefinitionのWidthを直接書き換えるが、
+    // その値をそのまま拾うと不正確なため、実際のActualWidthから計算し直す。
+    private void ListDetailSplitter_DragDelta(object sender, DragDeltaEventArgs e)
     {
-        var total = beforeSize + afterSize;
-        if (total <= 0)
+        if (_viewModel is null)
             return;
 
-        var ratio = (beforeSize + delta) / total;
-        if (double.IsFinite(ratio))
-            setRatio(System.Math.Clamp(ratio, LayoutConstants.MinSplitRatio, LayoutConstants.MaxSplitRatio));
+        var total = LeftColumn.ActualWidth + RightColumn.ActualWidth;
+        var maxWidth = System.Math.Max(LayoutConstants.MinSplitPaneWidth, total - LayoutConstants.MinSplitPaneWidth);
+        var width = System.Math.Clamp(LeftColumn.ActualWidth + e.HorizontalChange, LayoutConstants.MinSplitPaneWidth, maxWidth);
+        if (double.IsFinite(width))
+            _viewModel.ListWidth = width;
     }
 }

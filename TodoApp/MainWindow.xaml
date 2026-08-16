@@ -42,7 +42,6 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <views:TodoFramePanel Grid.Row="1" DataContext="{Binding RootNode}"
-                             BottomLeftRightRatio="{Binding DataContext.BottomLeftRightRatio, RelativeSource={RelativeSource AncestorType=Window}}" />
+        <views:TodoFramePanel Grid.Row="1" DataContext="{Binding RootNode}" />
     </Grid>
 </Window>
