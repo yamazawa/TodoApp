@@ -14,7 +14,12 @@
         MinHeight="{x:Static styles:LayoutConstants.WindowMinHeight}"
         MinWidth="{x:Static styles:LayoutConstants.WindowMinWidth}">
     <Window.Resources>
-        <ResourceDictionary Source="/Styles/CommonStyles.xaml" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/CommonStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        </ResourceDictionary>
     </Window.Resources>
     <Grid Margin="{x:Static styles:LayoutConstants.RootMargin}">
         <Grid.RowDefinitions>
@@ -22,7 +27,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- パンくずリスト : 親TODOへのリンク。祖先が無ければ何も表示しない。 -->
+        <!-- パンくずリスト : 祖先へのリンク→表示中のTODO(リンク無し)→再帰的に表示中のTODOへのリンク。 -->
         <ItemsControl Grid.Row="0" Margin="{x:Static styles:LayoutConstants.FieldSpacing}"
                       ItemsSource="{Binding Breadcrumbs}">
             <ItemsControl.ItemsPanel>
@@ -35,8 +40,12 @@
                     <StackPanel Orientation="Horizontal">
                         <Button Content="{Binding Label}" Style="{StaticResource LinkButtonStyle}"
                                 Command="{Binding DataContext.NavigateToBreadcrumbCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                CommandParameter="{Binding}" />
-                        <TextBlock Text=" / " />
+                                CommandParameter="{Binding}"
+                                Visibility="{Binding IsLink, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <TextBlock Text="{Binding Label}"
+                                   Visibility="{Binding IsCurrent, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <TextBlock Text=" / "
+                                   Visibility="{Binding ShowSeparator, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
