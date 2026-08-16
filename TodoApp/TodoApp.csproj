@@ -29,4 +29,17 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- ステータスアイコン。ChildTodoItemTemplateの表示で使用する。 -->
+  <ItemGroup>
+    <Resource Include="..\image\未対応.ico">
+      <Link>image\未対応.ico</Link>
+    </Resource>
+    <Resource Include="..\image\対応中.ico">
+      <Link>image\対応中.ico</Link>
+    </Resource>
+    <Resource Include="..\image\完了.ico">
+      <Link>image\完了.ico</Link>
+    </Resource>
+  </ItemGroup>
+
 </Project>

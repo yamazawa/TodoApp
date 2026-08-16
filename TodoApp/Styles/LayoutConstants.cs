@@ -26,4 +26,8 @@ public static class LayoutConstants
     // ドラッグ操作を終えた位置が、null(自動サイズ)時の横幅とこの範囲内なら
     // nullに丸めて、以後も内容に合わせた自動サイズを保つ。
     public const double ListWidthSnapTolerance = 5;
+
+    // 子TODOリスト項目のステータスアイコン。
+    public const double StatusIconSize = 16;
+    public static readonly Thickness StatusIconMargin = new(4, 0, 0, 0);
 }
