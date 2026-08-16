@@ -5,14 +5,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:styles="clr-namespace:TodoApp.Styles"
              xmlns:resx="clr-namespace:TodoApp.Resources"
-             xmlns:conv="clr-namespace:TodoApp.Converters"
              xmlns:views="clr-namespace:TodoApp.Views"
              xmlns:behaviors="clr-namespace:TodoApp.Behaviors"
              mc:Ignorable="d"
              x:Name="Root">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <conv:ListWidthToGridLengthConverter x:Key="ListWidthToGridLengthConverter" />
     </UserControl.Resources>
     <Grid>
         <!-- 状況① : 子TODO0件、メモ1件 → リストなしで選択中メモを直接表示する。 -->
@@ -34,8 +32,9 @@
                 <!-- リストは表示横幅(TODO単位の表示情報)を優先し、nullなら内容に合わせて自動サイズにする。 -->
                 <!-- Auto(=null)は無限幅で測るため、タブ2つ・リスト項目のテキストが -->
                 <!-- 見切れない幅に自然と収まる。ドラッグ操作では最小幅を設けない。 -->
-                <ColumnDefinition x:Name="LeftColumn"
-                                  Width="{Binding ListWidth, Converter={StaticResource ListWidthToGridLengthConverter}}" />
+                <!-- WidthはXAMLで直接バインドせず、SplitterColumnWidthBehaviorがSetCurrentValueで -->
+                <!-- 反映する(GridSplitterの直接書き込みとバインドが競合しないようにするため)。 -->
+                <ColumnDefinition x:Name="LeftColumn" Width="Auto" />
                 <ColumnDefinition Width="{x:Static styles:LayoutConstants.SplitterThickness}" />
                 <ColumnDefinition x:Name="RightColumn" Width="*" />
             </Grid.ColumnDefinitions>
