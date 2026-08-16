@@ -1,20 +1,34 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using TodoApp.Resources;
 
 namespace TodoApp.Models;
 
 /// <summary>
-/// タイトル(null可)と本文を持つ項目の共通基底クラス
+/// タイトルを持つ項目の共通基底クラス
 ///
 /// TodoItem、MemoItemの両方から使う。
 /// </summary>
 public abstract partial class TitledItem : ObservableObject, IDisposable
 {
-    [ObservableProperty]
-    private string? _title;
+    private string _title = Strings.Title_Default;
 
-    [ObservableProperty]
-    private string _body = string.Empty;
+    /// <summary>
+    /// タイトル(必須)
+    ///
+    /// 空文字は無視し、直前の値を保持する。
+    /// </summary>
+    public string Title
+    {
+        get => _title;
+        set
+        {
+            if (string.IsNullOrEmpty(value) || value == _title)
+                return;
+
+            SetProperty(ref _title, value);
+        }
+    }
 
     /// <summary>
     /// リスト項目が編集中かどうか
@@ -24,28 +38,11 @@ public abstract partial class TitledItem : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _isEditing;
 
-    /// <summary>
-    /// 表示用タイトル
-    ///
-    /// タイトルがnullの場合は本文の1行目を返す。
-    /// </summary>
-    public string DisplayTitle => string.IsNullOrEmpty(Title) ? FirstLineOf(Body) : Title;
-
-    partial void OnTitleChanged(string? value) => OnPropertyChanged(nameof(DisplayTitle));
-
-    partial void OnBodyChanged(string value) => OnPropertyChanged(nameof(DisplayTitle));
-
     [RelayCommand]
     private void StartEdit() => IsEditing = true;
 
     [RelayCommand]
     private void EndEdit() => IsEditing = false;
-
-    private static string FirstLineOf(string text)
-    {
-        var index = text.IndexOfAny(['\r', '\n']);
-        return index < 0 ? text : text[..index];
-    }
 
     // 既定では解放するものが無い。イベント購読を持つ派生クラスでオーバーライドする。
     public virtual void Dispose() => GC.SuppressFinalize(this);

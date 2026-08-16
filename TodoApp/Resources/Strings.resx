@@ -101,13 +101,16 @@
   <data name="Menu_ConvertToChildTodo" xml:space="preserve">
     <value>TODO情報へ変換</value>
   </data>
-  <data name="Breadcrumb_NullTitle" xml:space="preserve">
-    <value>(タイトルなし)</value>
-  </data>
   <data name="NavigateLink" xml:space="preserve">
     <value>リンク</value>
   </data>
   <data name="Menu_Open" xml:space="preserve">
     <value>開く</value>
+  </data>
+  <data name="Title_Default" xml:space="preserve">
+    <value>無題</value>
+  </data>
+  <data name="MemoTitle_Readme" xml:space="preserve">
+    <value>README</value>
   </data>
 </root>

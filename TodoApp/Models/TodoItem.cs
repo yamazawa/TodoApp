@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using TodoApp.Models.Enums;
+using TodoApp.Resources;
 
 namespace TodoApp.Models;
 
@@ -42,6 +43,19 @@ public partial class TodoItem : TitledItem
     public TodoItem()
     {
         ChildTodoList.CollectionChanged += OnChildTodoListChanged;
+    }
+
+    /// <summary>
+    /// メモ情報「README」を1件持つ、新規TODOを作成する
+    ///
+    /// メモ情報リストは最低1件を保持するルールのため、
+    /// 新規TODOには必ずこのメモを1件付与する。
+    /// </summary>
+    public static TodoItem CreateNew()
+    {
+        var item = new TodoItem();
+        item.MemoList.Add(new MemoItem { Title = Strings.MemoTitle_Readme });
+        return item;
     }
 
     // 子TODOを対応中→未対応→完了の順を保った位置に挿入する。
