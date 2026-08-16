@@ -28,6 +28,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // 表示位置・タブ・子TODOの変化を検知してパンくずリストを再構築する。
     private readonly List<TodoItem> _displayedChain = [];
 
+    // パンくずリスト末尾に表示する、現在表示中のメモ情報。
+    private MemoItem? _displayedMemo;
+
     // 画面に表示中のTODO。ロード済みツリー内の任意のノードを指せる(移動リンクで切替可能)。
     [ObservableProperty]
     private TodoItem _selectedTodo;
@@ -182,13 +185,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
             displayed = child;
         }
 
-        UpdateDisplayedChainSubscriptions(displayedChain);
+        // 末端がメモ情報を表示している場合(状況①②、または状況③でNOTEリスト選択時)は、
+        // そのメモのタイトルもリンク無しで追加する。
+        MemoItem? displayedMemo = null;
+        if ((displayed.ChildTodoList.Count == 0 || displayed.SelectedTabIndex == 1) && displayed.SelectedMemo is { } memo)
+        {
+            displayedMemo = memo;
+            entries.Add(new BreadcrumbEntry(memo.Title, TargetTodo: null, ParentDir: null));
+        }
+
+        UpdateDisplayedChainSubscriptions(displayedChain, displayedMemo);
         Breadcrumbs = entries;
     }
 
-    // 再帰的に表示中のTODO項目が変わりうる箇所(タイトル・子TODO一覧・選択状態)を購読し、
-    // 変化があればパンくずリストを組み直す。
-    private void UpdateDisplayedChainSubscriptions(List<TodoItem> chain)
+    // 再帰的に表示中のTODO項目・メモ情報が変わりうる箇所(タイトル・子TODO一覧・選択状態)を
+    // 購読し、変化があればパンくずリストを組み直す。
+    private void UpdateDisplayedChainSubscriptions(List<TodoItem> chain, MemoItem? memo)
     {
         foreach (var item in _displayedChain)
         {
@@ -204,15 +216,30 @@ public partial class MainViewModel : ObservableObject, IDisposable
             item.PropertyChanged += OnDisplayedChainItemPropertyChanged;
             item.ChildTodoList.CollectionChanged += OnDisplayedChainChildListChanged;
         }
+
+        if (_displayedMemo is not null)
+            _displayedMemo.PropertyChanged -= OnDisplayedMemoPropertyChanged;
+
+        _displayedMemo = memo;
+
+        if (_displayedMemo is not null)
+            _displayedMemo.PropertyChanged += OnDisplayedMemoPropertyChanged;
     }
 
     private void OnDisplayedChainItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(TodoItem.Title) or nameof(TodoItem.SelectedChildTodo) or nameof(TodoItem.SelectedTabIndex))
+        if (e.PropertyName is nameof(TodoItem.Title) or nameof(TodoItem.SelectedChildTodo)
+            or nameof(TodoItem.SelectedTabIndex) or nameof(TodoItem.SelectedMemo))
             RebuildBreadcrumbs();
     }
 
     private void OnDisplayedChainChildListChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildBreadcrumbs();
+
+    private void OnDisplayedMemoPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MemoItem.Title))
+            RebuildBreadcrumbs();
+    }
 
     /// <summary>
     /// 変更のあった項目をキューへ積む
@@ -232,7 +259,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // 破棄は必ずツリー全体の保有者であるLoadedRootに対して行う。
     public void Dispose()
     {
-        UpdateDisplayedChainSubscriptions([]);
+        UpdateDisplayedChainSubscriptions([], null);
         RootNode.Dispose();
         _changeTracker.Dispose();
         _loadedRoot.Dispose();
