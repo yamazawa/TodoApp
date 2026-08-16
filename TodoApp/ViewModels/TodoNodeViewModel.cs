@@ -15,7 +15,7 @@ namespace TodoApp.ViewModels;
 /// <summary>
 /// 1件のTodoItem(ノード)に対する子TODO/メモ情報の操作をまとめたViewModel
 ///
-/// メイン画面のルート、下半分の右側(子TODO表示時)の孫項目パネルの両方から使い回す。
+/// メイン画面のルート、右側(子TODO表示時)の孫項目パネルの両方から使い回す。
 /// 保有者がNodeとは別に生成・破棄する(Nodeそのものの破棄は行わない)。
 /// </summary>
 public partial class TodoNodeViewModel : ObservableObject, IDisposable
@@ -136,6 +136,18 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
     }
 
     private bool CanAddChildTodo() => Node.ChildTodoList.Count < TodoFileNaming.MaxItemCount;
+
+    // 右クリックメニューからのステータス変更。未対応→対応中→完了の順に1段階だけ進める。
+    [RelayCommand]
+    private void AdvanceChildTodoStatus(TodoItem item)
+    {
+        item.Status = item.Status switch
+        {
+            TodoStatus.NotStarted => TodoStatus.InProgress,
+            TodoStatus.InProgress => TodoStatus.Done,
+            _ => item.Status,
+        };
+    }
 
     [RelayCommand(CanExecute = nameof(CanDeleteChildTodo))]
     private void DeleteChildTodo() =>

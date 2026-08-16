@@ -11,7 +11,7 @@ namespace TodoApp.ViewModels;
 /// メイン画面のViewModel。
 ///
 /// ルートTODOに対する子TODO/メモ情報の操作はRootNode(TodoNodeViewModel)に委譲する。
-/// 下半分の右側に子TODOの孫項目パネルを表示するため、選択中の子TODOをChildNodeとして持つ。
+/// 右側に子TODOの孫項目パネルを表示するため、選択中の子TODOをChildNodeとして持つ。
 /// </summary>
 public partial class MainViewModel : ObservableObject, IDisposable
 {
@@ -38,15 +38,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     // 境界のドラッグ操作で変更できる表示比率。⑤アプリ全体設定として保存する。
     [ObservableProperty]
-    private double _topBottomRatio;
-
-    [ObservableProperty]
     private double _bottomLeftRightRatio;
 
-    // 下半分の右側(子TODO項目表示時)の内部比率。親TODOの表示割合とは別に保持する。
-    [ObservableProperty]
-    private double _nestedTopBottomRatio;
-
+    // 右側(子TODO項目表示時)の内部比率。親TODOの表示割合とは別に保持する。
     [ObservableProperty]
     private double _nestedLeftRightRatio;
 
@@ -74,19 +68,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
         RebuildChildNode();
         RebuildBreadcrumbs();
 
-        _topBottomRatio = settings.TopBottomRatio;
         _bottomLeftRightRatio = settings.BottomLeftRightRatio;
-        _nestedTopBottomRatio = settings.NestedTopBottomRatio;
         _nestedLeftRightRatio = settings.NestedLeftRightRatio;
         _windowWidth = settings.WindowWidth;
         _windowHeight = settings.WindowHeight;
     }
 
-    partial void OnTopBottomRatioChanged(double value) => MarkSettingsDirty();
-
     partial void OnBottomLeftRightRatioChanged(double value) => MarkSettingsDirty();
-
-    partial void OnNestedTopBottomRatioChanged(double value) => MarkSettingsDirty();
 
     partial void OnNestedLeftRightRatioChanged(double value) => MarkSettingsDirty();
 
@@ -108,7 +96,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _settingsDirty = false;
         _settingsService.Save(new AppSettings(
-            _rootParentDir, TopBottomRatio, BottomLeftRightRatio, NestedTopBottomRatio, NestedLeftRightRatio, WindowWidth, WindowHeight));
+            _rootParentDir, BottomLeftRightRatio, NestedLeftRightRatio, WindowWidth, WindowHeight));
     }
 
     /// <summary>
@@ -168,7 +156,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         RebuildBreadcrumbs();
     }
 
-    // 下半分の右側(子TODO選択時)の孫項目パネル用に、選択中の子TODOをラップし直す。
+    // 右側(子TODO選択時)の孫項目パネル用に、選択中の子TODOをラップし直す。
     private void OnRootNodePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(TodoNodeViewModel.SelectedChildTodo))
