@@ -6,6 +6,7 @@
              xmlns:styles="clr-namespace:TodoApp.Styles"
              xmlns:conv="clr-namespace:TodoApp.Converters"
              xmlns:resx="clr-namespace:TodoApp.Resources"
+             xmlns:behaviors="clr-namespace:TodoApp.Behaviors"
              mc:Ignorable="d"
              x:Name="Root">
     <UserControl.Resources>
@@ -14,7 +15,6 @@
                 <ResourceDictionary Source="/Styles/CommonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <conv:TodoStatusToStringConverter x:Key="TodoStatusToStringConverter" />
-            <conv:EmptyStringToNullConverter x:Key="EmptyStringToNullConverter" />
             <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         </ResourceDictionary>
@@ -32,10 +32,10 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0">
-                <!-- タイトルがnullかつ未フォーカス時は、本文の1行目を濃いグレーで代わりに表示する。 -->
                 <TextBox x:Name="TitleTextBox"
                          Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                         Text="{Binding Title, ElementName=Root, Converter={StaticResource EmptyStringToNullConverter}, UpdateSourceTrigger=PropertyChanged}">
+                         Text="{Binding Title, ElementName=Root, UpdateSourceTrigger=PropertyChanged}"
+                         behaviors:RevertOnLostFocusBehavior.IsEnabled="True">
                     <!-- 進行中のTODOはタイトル欄の背景を薄い黄色に、完了済みは薄いグレーにする。 -->
                     <TextBox.Style>
                         <Style TargetType="TextBox">
@@ -50,25 +50,6 @@
                         </Style>
                     </TextBox.Style>
                 </TextBox>
-                <TextBlock IsHitTestVisible="False"
-                           Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                           Foreground="DarkGray"
-                           Text="{Binding DisplayTitle, ElementName=Root}">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <MultiDataTrigger>
-                                    <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding Title, ElementName=Root}" Value="{x:Null}" />
-                                        <Condition Binding="{Binding IsFocused, ElementName=TitleTextBox}" Value="False" />
-                                    </MultiDataTrigger.Conditions>
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </MultiDataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
             </Grid>
             <!-- 選択中の子TODO/孫TODOの詳細でのみ使う、現在の表示位置への切替リンク。 -->
             <Button Grid.Column="1" Style="{StaticResource LinkButtonStyle}"

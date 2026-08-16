@@ -65,7 +65,6 @@ public class TodoCommandFileService
         var parentPath = ResolveParentPath(task);
         var selfPath = MoveOrCreate(task.Identity, parentPath, task.Ordinal, task.Title, task.Status);
 
-        File.WriteAllText(Path.Combine(selfPath, TodoFileNaming.ReadmeFileName), task.Body);
         File.WriteAllText(Path.Combine(selfPath, TodoFileNaming.SaveInfoFileName), JsonSerializer.Serialize(task.SaveInfo));
         SyncMemoFiles(selfPath, task.Memos);
         SyncChildFolders(selfPath, task.Children);
@@ -80,7 +79,7 @@ public class TodoCommandFileService
         return _lastKnownPath.TryGetValue(task.ParentIdentity, out var path) ? path : task.RootParentDir;
     }
 
-    private string MoveOrCreate(TodoItem identity, string parentPath, int ordinal, string? title, Models.Enums.TodoStatus status)
+    private string MoveOrCreate(TodoItem identity, string parentPath, int ordinal, string title, Models.Enums.TodoStatus status)
     {
         var desiredName = TodoFileNaming.BuildTodoFolderName(ordinal, title, status);
         var desiredPath = Path.Combine(parentPath, desiredName);
@@ -104,8 +103,7 @@ public class TodoCommandFileService
         var desiredNames = memos.Select(m => m.FileName).ToHashSet();
         foreach (var existing in Directory.GetFiles(selfPath, "*.md"))
         {
-            var name = Path.GetFileName(existing);
-            if (name != TodoFileNaming.ReadmeFileName && !desiredNames.Contains(name))
+            if (!desiredNames.Contains(Path.GetFileName(existing)))
                 File.Delete(existing);
         }
 
@@ -117,7 +115,7 @@ public class TodoCommandFileService
 
     private void SyncChildFolders(
         string selfPath,
-        IReadOnlyList<(TodoItem Identity, int Ordinal, string? Title, Models.Enums.TodoStatus Status)> children)
+        IReadOnlyList<(TodoItem Identity, int Ordinal, string Title, Models.Enums.TodoStatus Status)> children)
     {
         var desiredNames = new HashSet<string>();
         foreach (var (identity, ordinal, title, status) in children)

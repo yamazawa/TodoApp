@@ -57,9 +57,7 @@
         <!-- 上半分 : タイトル/ステータス/本文 -->
         <views:TodoDetailEditor Grid.Row="1" Margin="{x:Static styles:LayoutConstants.SectionSpacing}"
                                  Title="{Binding SelectedTodo.Title}"
-                                 DisplayTitle="{Binding SelectedTodo.DisplayTitle}"
                                  Status="{Binding SelectedTodo.Status}"
-                                 Body="{Binding SelectedTodo.Body}"
                                  StatusOptions="{x:Static vm:TodoNodeViewModel.StatusOptions}"
                                  ShowStatus="True" />
 
@@ -94,9 +92,7 @@
 
                     <views:TodoDetailEditor Grid.Row="0" Margin="{x:Static styles:LayoutConstants.SectionSpacing}"
                                              Title="{Binding RootNode.SelectedChildTodo.Title}"
-                                             DisplayTitle="{Binding RootNode.SelectedChildTodo.DisplayTitle}"
                                              Status="{Binding RootNode.SelectedChildTodo.Status}"
-                                             Body="{Binding RootNode.SelectedChildTodo.Body}"
                                              StatusOptions="{x:Static vm:TodoNodeViewModel.StatusOptions}"
                                              ShowStatus="True"
                                              NavigateCommand="{Binding NavigateToChildCommand}"
@@ -124,9 +120,7 @@
                         <Grid Grid.Column="2" Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
                             <views:TodoDetailEditor Visibility="{Binding ChildNode.IsChildTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                      Title="{Binding ChildNode.SelectedChildTodo.Title}"
-                                                     DisplayTitle="{Binding ChildNode.SelectedChildTodo.DisplayTitle}"
                                                      Status="{Binding ChildNode.SelectedChildTodo.Status}"
-                                                     Body="{Binding ChildNode.SelectedChildTodo.Body}"
                                                      ChildCountText="{Binding ChildNode.SelectedChildTodo.ChildCountText}"
                                                      StatusOptions="{x:Static vm:TodoNodeViewModel.StatusOptions}"
                                                      ShowStatus="True"
@@ -134,7 +128,6 @@
                                                      NavigateTarget="{Binding ChildNode.SelectedChildTodo}" />
                             <views:TodoDetailEditor Visibility="{Binding ChildNode.IsMemoTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                      Title="{Binding ChildNode.SelectedMemo.Title}"
-                                                     DisplayTitle="{Binding ChildNode.SelectedMemo.DisplayTitle}"
                                                      Body="{Binding ChildNode.SelectedMemo.Body}"
                                                      ShowStatus="False" />
                         </Grid>
@@ -144,7 +137,6 @@
                 <!-- メモ情報タブ選択時 -->
                 <views:TodoDetailEditor Visibility="{Binding RootNode.IsMemoTabSelected, Converter={StaticResource BooleanToVisibilityConverter}}"
                                          Title="{Binding RootNode.SelectedMemo.Title}"
-                                         DisplayTitle="{Binding RootNode.SelectedMemo.DisplayTitle}"
                                          Body="{Binding RootNode.SelectedMemo.Body}"
                                          ShowStatus="False" />
             </Grid>

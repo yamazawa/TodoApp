@@ -116,15 +116,6 @@ namespace TodoApp.Resources {
         }
 
         /// <summary>
-        ///   (タイトルなし) に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string Breadcrumb_NullTitle {
-            get {
-                return ResourceManager.GetString("Breadcrumb_NullTitle", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   リンク に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NavigateLink {
@@ -211,6 +202,24 @@ namespace TodoApp.Resources {
         public static string Menu_Open {
             get {
                 return ResourceManager.GetString("Menu_Open", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   無題 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Title_Default {
+            get {
+                return ResourceManager.GetString("Title_Default", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   README に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string MemoTitle_Readme {
+            get {
+                return ResourceManager.GetString("MemoTitle_Readme", resourceCulture);
             }
         }
     }

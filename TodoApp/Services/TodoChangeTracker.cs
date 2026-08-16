@@ -94,7 +94,7 @@ public class TodoChangeTracker : IDisposable
             item.SelectedChildTodo is null ? null : item.ChildTodoList.IndexOf(item.SelectedChildTodo),
             item.SelectedMemo is null ? null : item.MemoList.IndexOf(item.SelectedMemo));
 
-        return new NodeSyncTask(item, parent, _rootParentDir, ordinal, item.Title, item.Status, item.Body, memos, children, saveInfo);
+        return new NodeSyncTask(item, parent, _rootParentDir, ordinal, item.Title, item.Status, memos, children, saveInfo);
     }
 
     private int Depth(TodoItem item)
@@ -137,7 +137,7 @@ public class TodoChangeTracker : IDisposable
         if (sender is not TodoItem item)
             return;
 
-        if (e.PropertyName is nameof(TodoItem.Title) or nameof(TodoItem.Body) or nameof(TodoItem.Status)
+        if (e.PropertyName is nameof(TodoItem.Title) or nameof(TodoItem.Status)
             or nameof(TodoItem.SelectedTabIndex) or nameof(TodoItem.SelectedChildTodo) or nameof(TodoItem.SelectedMemo))
             _dirtyNodes.Add(item);
     }
