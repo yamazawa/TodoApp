@@ -1,3 +1,5 @@
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -21,6 +23,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private TodoItem _loadedRoot;
     private string _rootParentDir;
     private bool _settingsDirty;
+
+    // パンくずリストの「再帰的に表示中のTODO項目」の算出のために購読中のTODO。
+    // 表示位置・タブ・子TODOの変化を検知してパンくずリストを再構築する。
+    private readonly List<TodoItem> _displayedChain = [];
 
     // 画面に表示中のTODO。ロード済みツリー内の任意のノードを指せる(移動リンクで切替可能)。
     [ObservableProperty]
@@ -135,6 +141,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // パンくずリストを組み立てる。
     // ①ファイルシステム上の祖先(ロード済みツリーの外側、フォルダ名の規則+④保存情報の存在で判定)。
     // ②インメモリの祖先(ロード済みツリー内、移動リンクで下りてきた分)。
+    // ③現在表示中のTODO自身(リンク無し)。
+    // ④再帰的に表示中のTODO項目(TodoItemのSelectedChildTodo/SelectedTabIndexを辿って算出)。
     // ファイルの中身は見ない。
     private void RebuildBreadcrumbs()
     {
@@ -163,8 +171,48 @@ public partial class MainViewModel : ObservableObject, IDisposable
         inMemoryAncestors.Reverse();
         entries.AddRange(inMemoryAncestors.Select(t => new BreadcrumbEntry(t.Title, t, ParentDir: null)));
 
+        entries.Add(new BreadcrumbEntry(SelectedTodo.Title, TargetTodo: null, ParentDir: null));
+
+        var displayedChain = new List<TodoItem> { SelectedTodo };
+        var displayed = SelectedTodo;
+        while (displayed.ChildTodoList.Count > 0 && displayed.SelectedTabIndex == 0 && displayed.SelectedChildTodo is { } child)
+        {
+            entries.Add(new BreadcrumbEntry(child.Title, child, ParentDir: null));
+            displayedChain.Add(child);
+            displayed = child;
+        }
+
+        UpdateDisplayedChainSubscriptions(displayedChain);
         Breadcrumbs = entries;
     }
+
+    // 再帰的に表示中のTODO項目が変わりうる箇所(タイトル・子TODO一覧・選択状態)を購読し、
+    // 変化があればパンくずリストを組み直す。
+    private void UpdateDisplayedChainSubscriptions(List<TodoItem> chain)
+    {
+        foreach (var item in _displayedChain)
+        {
+            item.PropertyChanged -= OnDisplayedChainItemPropertyChanged;
+            item.ChildTodoList.CollectionChanged -= OnDisplayedChainChildListChanged;
+        }
+
+        _displayedChain.Clear();
+        _displayedChain.AddRange(chain);
+
+        foreach (var item in _displayedChain)
+        {
+            item.PropertyChanged += OnDisplayedChainItemPropertyChanged;
+            item.ChildTodoList.CollectionChanged += OnDisplayedChainChildListChanged;
+        }
+    }
+
+    private void OnDisplayedChainItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(TodoItem.Title) or nameof(TodoItem.SelectedChildTodo) or nameof(TodoItem.SelectedTabIndex))
+            RebuildBreadcrumbs();
+    }
+
+    private void OnDisplayedChainChildListChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildBreadcrumbs();
 
     /// <summary>
     /// 変更のあった項目をキューへ積む
@@ -184,6 +232,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // 破棄は必ずツリー全体の保有者であるLoadedRootに対して行う。
     public void Dispose()
     {
+        UpdateDisplayedChainSubscriptions([]);
         RootNode.Dispose();
         _changeTracker.Dispose();
         _loadedRoot.Dispose();
