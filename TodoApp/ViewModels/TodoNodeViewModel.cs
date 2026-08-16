@@ -129,7 +129,8 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanAddChildTodo))]
     private void AddChildTodo()
     {
-        var item = new TodoItem { IsEditing = true };
+        var item = TodoItem.CreateNew();
+        item.IsEditing = true;
         Node.AddChild(item);
         SelectedChildTodo = item;
     }
@@ -156,7 +157,8 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
     private void DeleteMemo() =>
         DeleteWithConfirm(SelectedMemo, Node.MemoList, Strings.ConfirmDelete_MemoMessage);
 
-    private bool CanDeleteMemo() => SelectedMemo is not null;
+    // メモ情報リストは最低1件を保持するため、2件以上のときのみ削除できる。
+    private bool CanDeleteMemo() => SelectedMemo is not null && Node.MemoList.Count > 1;
 
     [RelayCommand(CanExecute = nameof(CanOpenChildTodo))]
     private void OpenChildTodo()
@@ -225,28 +227,29 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
     private bool CanConvertChildTodoToMemo() => SelectedChildTodo is not null;
 
-    // メモ情報を子TODOへ変換する。
+    // メモ情報を子TODOへ変換する。メモ情報自体を新しいTODOの初期メモとして引き継ぐ。
     [RelayCommand(CanExecute = nameof(CanConvertMemoToChildTodo))]
     private void ConvertMemoToChildTodo()
     {
         if (SelectedMemo is not { } memo)
             return;
 
-        var newItem = new TodoItem { Title = memo.Title, Body = memo.Body };
+        var newItem = new TodoItem { Title = memo.Title };
         Node.MemoList.Remove(memo);
+        newItem.MemoList.Add(memo);
         Node.AddChild(newItem);
 
         SelectedTabIndex = 0;
         SelectedChildTodo = newItem;
     }
 
-    private bool CanConvertMemoToChildTodo() => SelectedMemo is not null;
+    // メモ情報リストは最低1件を保持するため、2件以上のときのみ変換できる。
+    private bool CanConvertMemoToChildTodo() => SelectedMemo is not null && Node.MemoList.Count > 1;
 
-    // 自分自身→自分のメモ情報→各子TODO(再帰的に平坦化)の順でメモ化する。
+    // 自分のメモ情報→各子TODO(再帰的に平坦化)の順でメモ化する。
     private static List<MemoItem> FlattenToMemos(TodoItem item)
     {
-        var result = new List<MemoItem> { new() { Title = item.Title, Body = item.Body } };
-        result.AddRange(item.MemoList.Select(memo => new MemoItem { Title = memo.Title, Body = memo.Body }));
+        var result = item.MemoList.Select(memo => new MemoItem { Title = memo.Title, Body = memo.Body }).ToList();
         foreach (var child in item.ChildTodoList)
         {
             result.AddRange(FlattenToMemos(child));
