@@ -159,7 +159,13 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
     private bool CanDeleteMemo() => SelectedMemo is not null;
 
     [RelayCommand(CanExecute = nameof(CanOpenChildTodo))]
-    private void OpenChildTodo() => ExplorerLauncher.OpenFolder(_commandFileService.TryGetPath(SelectedChildTodo!));
+    private void OpenChildTodo()
+    {
+        if (SelectedChildTodo is not { } child)
+            return;
+
+        ExplorerLauncher.OpenFolder(_commandFileService.TryGetPath(child));
+    }
 
     private bool CanOpenChildTodo() => SelectedChildTodo is not null;
 
