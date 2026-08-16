@@ -62,10 +62,10 @@
     <value>TODOアプリ</value>
   </data>
   <data name="Tab_TodoList" xml:space="preserve">
-    <value>TODOリスト</value>
+    <value>TODO</value>
   </data>
   <data name="Tab_NoteList" xml:space="preserve">
-    <value>NOTEリスト</value>
+    <value>NOTE</value>
   </data>
   <data name="Button_Add" xml:space="preserve">
     <value>追加</value>

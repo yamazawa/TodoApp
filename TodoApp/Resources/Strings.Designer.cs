@@ -170,7 +170,7 @@ namespace TodoApp.Resources {
         }
         
         /// <summary>
-        ///   TODOリスト に類似しているローカライズされた文字列を検索します。
+        ///   TODO に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Tab_TodoList {
             get {
@@ -179,7 +179,7 @@ namespace TodoApp.Resources {
         }
 
         /// <summary>
-        ///   NOTEリスト に類似しているローカライズされた文字列を検索します。
+        ///   NOTE に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Tab_NoteList {
             get {
