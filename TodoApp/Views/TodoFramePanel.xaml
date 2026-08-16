@@ -7,6 +7,7 @@
              xmlns:resx="clr-namespace:TodoApp.Resources"
              xmlns:conv="clr-namespace:TodoApp.Converters"
              xmlns:views="clr-namespace:TodoApp.Views"
+             xmlns:behaviors="clr-namespace:TodoApp.Behaviors"
              mc:Ignorable="d"
              x:Name="Root">
     <UserControl.Resources>
@@ -44,8 +45,12 @@
 
             <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           ResizeDirection="Columns" Background="Transparent"
-                          DragDelta="ListDetailSplitter_DragDelta"
-                          DragCompleted="ListDetailSplitter_DragCompleted" />
+                          behaviors:SplitterColumnWidthBehavior.IsEnabled="True"
+                          behaviors:SplitterColumnWidthBehavior.TargetColumn="{Binding ElementName=LeftColumn}"
+                          behaviors:SplitterColumnWidthBehavior.SiblingColumn="{Binding ElementName=RightColumn}"
+                          behaviors:SplitterColumnWidthBehavior.MeasureElement="{Binding ElementName=ListPanel}"
+                          behaviors:SplitterColumnWidthBehavior.SnapTolerance="{x:Static styles:LayoutConstants.ListWidthSnapTolerance}"
+                          behaviors:SplitterColumnWidthBehavior.Width="{Binding ListWidth}" />
 
             <!-- Marginは付けない(再帰するたびに積み重なって縦幅が縮んでしまうため)。 -->
             <!-- 余白が必要なメモ表示側にだけ個別に付ける。 -->
