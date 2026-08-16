@@ -5,7 +5,7 @@ namespace TodoApp.Services;
 /// <summary>
 /// 起動時に表示するTODOフォルダパスをiniファイルから読み込むサービス
 ///
-/// %AppData%\TodoApp\config.ini に保存する。settings.jsonとは別ファイルで管理する。
+/// %AppData%\TodoApp(_Debug)\config.ini に保存する。settings.jsonとは別ファイルで管理する。
 /// </summary>
 public class RootDirConfigService
 {
@@ -14,7 +14,7 @@ public class RootDirConfigService
 
     public RootDirConfigService()
     {
-        var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TodoApp");
+        var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppDataPaths.FolderName);
         Directory.CreateDirectory(dir);
         _configPath = Path.Combine(dir, "config.ini");
     }
