@@ -20,6 +20,8 @@
                            Tag="{Binding ElementName=Root}">
                     <TextBlock.ContextMenu>
                         <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="{x:Static resx:Strings.Menu_Open}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.OpenChildTodoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <MenuItem Header="{x:Static resx:Strings.Menu_Edit}"
                                       Command="{Binding StartEditCommand}" />
                             <MenuItem Header="{x:Static resx:Strings.NavigateLink}"
@@ -63,6 +65,8 @@
                            Tag="{Binding ElementName=Root}">
                     <TextBlock.ContextMenu>
                         <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="{x:Static resx:Strings.Menu_Open}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.OpenMemoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <MenuItem Header="{x:Static resx:Strings.Menu_Edit}"
                                       Command="{Binding StartEditCommand}" />
                             <MenuItem Header="{x:Static resx:Strings.Menu_ConvertToChildTodo}"

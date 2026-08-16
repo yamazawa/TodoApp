@@ -70,7 +70,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _changeTracker = new TodoChangeTracker(_rootParentDir);
         _changeTracker.Attach(_loadedRoot);
 
-        RootNode = new TodoNodeViewModel(_selectedTodo);
+        RootNode = new TodoNodeViewModel(_selectedTodo, _commandFileService);
         RootNode.PropertyChanged += OnRootNodePropertyChanged;
         RebuildChildNode();
         RebuildBreadcrumbs();
@@ -162,7 +162,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         RootNode.PropertyChanged -= OnRootNodePropertyChanged;
         RootNode.Dispose();
-        RootNode = new TodoNodeViewModel(newValue);
+        RootNode = new TodoNodeViewModel(newValue, _commandFileService);
         RootNode.PropertyChanged += OnRootNodePropertyChanged;
         OnPropertyChanged(nameof(RootNode));
         RebuildChildNode();
@@ -179,7 +179,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void RebuildChildNode()
     {
         ChildNode?.Dispose();
-        ChildNode = RootNode.SelectedChildTodo is { } child ? new TodoNodeViewModel(child) : null;
+        ChildNode = RootNode.SelectedChildTodo is { } child ? new TodoNodeViewModel(child, _commandFileService) : null;
     }
 
     // パンくずリストを組み立てる。

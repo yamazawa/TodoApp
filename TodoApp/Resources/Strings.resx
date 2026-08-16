@@ -107,4 +107,7 @@
   <data name="NavigateLink" xml:space="preserve">
     <value>リンク</value>
   </data>
+  <data name="Menu_Open" xml:space="preserve">
+    <value>開く</value>
+  </data>
 </root>

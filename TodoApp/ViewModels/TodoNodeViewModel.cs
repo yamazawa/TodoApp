@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -20,6 +21,8 @@ namespace TodoApp.ViewModels;
 public partial class TodoNodeViewModel : ObservableObject, IDisposable
 {
     public static IReadOnlyList<TodoStatus> StatusOptions { get; } = Enum.GetValues<TodoStatus>();
+
+    private readonly TodoCommandFileService _commandFileService;
 
     public TodoItem Node { get; }
 
@@ -75,9 +78,10 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
     public string MemoTabHeader => $"{Strings.Tab_Memo}({Node.MemoList.Count})";
 
-    public TodoNodeViewModel(TodoItem node)
+    public TodoNodeViewModel(TodoItem node, TodoCommandFileService commandFileService)
     {
         Node = node;
+        _commandFileService = commandFileService;
         Node.ChildTodoList.CollectionChanged += OnChildTodoListChanged;
         Node.MemoList.CollectionChanged += OnMemoListChanged;
     }
@@ -109,6 +113,7 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         MoveChildTodoUpCommand.NotifyCanExecuteChanged();
         MoveChildTodoDownCommand.NotifyCanExecuteChanged();
         ConvertChildTodoToMemoCommand.NotifyCanExecuteChanged();
+        OpenChildTodoCommand.NotifyCanExecuteChanged();
     }
 
     private void NotifyMemoCommands()
@@ -118,6 +123,7 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         MoveMemoUpCommand.NotifyCanExecuteChanged();
         MoveMemoDownCommand.NotifyCanExecuteChanged();
         ConvertMemoToChildTodoCommand.NotifyCanExecuteChanged();
+        OpenMemoCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand(CanExecute = nameof(CanAddChildTodo))]
@@ -151,6 +157,33 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         DeleteWithConfirm(SelectedMemo, Node.MemoList, Strings.ConfirmDelete_MemoMessage);
 
     private bool CanDeleteMemo() => SelectedMemo is not null;
+
+    [RelayCommand(CanExecute = nameof(CanOpenChildTodo))]
+    private void OpenChildTodo()
+    {
+        if (SelectedChildTodo is not { } child)
+            return;
+
+        ExplorerLauncher.OpenFolder(_commandFileService.TryGetPath(child));
+    }
+
+    private bool CanOpenChildTodo() => SelectedChildTodo is not null;
+
+    [RelayCommand(CanExecute = nameof(CanOpenMemo))]
+    private void OpenMemo()
+    {
+        if (SelectedMemo is not { } memo)
+            return;
+
+        if (_commandFileService.TryGetPath(Node) is not { } folderPath)
+            return;
+
+        var ordinal = Node.MemoList.IndexOf(memo) + 1;
+        var fileName = TodoFileNaming.BuildMemoFileName(ordinal, memo.Title);
+        ExplorerLauncher.SelectFile(Path.Combine(folderPath, fileName));
+    }
+
+    private bool CanOpenMemo() => SelectedMemo is not null;
 
     [RelayCommand(CanExecute = nameof(CanMoveChildTodoUp))]
     private void MoveChildTodoUp() => MoveChildTodo(-1);
