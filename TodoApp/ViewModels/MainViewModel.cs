@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,8 +9,8 @@ namespace TodoApp.ViewModels;
 /// <summary>
 /// メイン画面のViewModel。
 ///
-/// ルートTODOに対する子TODO/メモ情報の操作はRootNode(TodoNodeViewModel)に委譲する。
-/// 右側に子TODOの孫項目パネルを表示するため、選択中の子TODOをChildNodeとして持つ。
+/// ルートTODOに対する子TODO/メモ情報の操作、および子TODOの再帰表示は
+/// RootNode(TodoNodeViewModel)に委譲する。
 /// </summary>
 public partial class MainViewModel : ObservableObject, IDisposable
 {
@@ -29,20 +28,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public TodoNodeViewModel RootNode { get; private set; }
 
-    [ObservableProperty]
-    private TodoNodeViewModel? _childNode;
-
     // 親TODOへのリンク一覧。遠い祖先→近い親の順に並ぶ。
     [ObservableProperty]
     private IReadOnlyList<BreadcrumbEntry> _breadcrumbs = [];
 
     // 境界のドラッグ操作で変更できる表示比率。⑤アプリ全体設定として保存する。
+    // 再帰の深さに関わらず、全階層で1つの値を共有する。
     [ObservableProperty]
     private double _bottomLeftRightRatio;
-
-    // 右側(子TODO項目表示時)の内部比率。親TODOの表示割合とは別に保持する。
-    [ObservableProperty]
-    private double _nestedLeftRightRatio;
 
     // ウィンドウサイズ。⑤アプリ全体設定として保存する。
     [ObservableProperty]
@@ -64,19 +57,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _changeTracker.Attach(_loadedRoot);
 
         RootNode = new TodoNodeViewModel(_selectedTodo, _commandFileService);
-        RootNode.PropertyChanged += OnRootNodePropertyChanged;
-        RebuildChildNode();
         RebuildBreadcrumbs();
 
         _bottomLeftRightRatio = settings.BottomLeftRightRatio;
-        _nestedLeftRightRatio = settings.NestedLeftRightRatio;
         _windowWidth = settings.WindowWidth;
         _windowHeight = settings.WindowHeight;
     }
 
     partial void OnBottomLeftRightRatioChanged(double value) => MarkSettingsDirty();
-
-    partial void OnNestedLeftRightRatioChanged(double value) => MarkSettingsDirty();
 
     partial void OnWindowWidthChanged(double value) => MarkSettingsDirty();
 
@@ -95,8 +83,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             return;
 
         _settingsDirty = false;
-        _settingsService.Save(new AppSettings(
-            _rootParentDir, BottomLeftRightRatio, NestedLeftRightRatio, WindowWidth, WindowHeight));
+        _settingsService.Save(new AppSettings(_rootParentDir, BottomLeftRightRatio, WindowWidth, WindowHeight));
     }
 
     /// <summary>
@@ -147,26 +134,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // SelectedTodoの差し替えに合わせてRootNode/パンくずリストも作り直す。
     partial void OnSelectedTodoChanged(TodoItem? oldValue, TodoItem newValue)
     {
-        RootNode.PropertyChanged -= OnRootNodePropertyChanged;
         RootNode.Dispose();
         RootNode = new TodoNodeViewModel(newValue, _commandFileService);
-        RootNode.PropertyChanged += OnRootNodePropertyChanged;
         OnPropertyChanged(nameof(RootNode));
-        RebuildChildNode();
         RebuildBreadcrumbs();
-    }
-
-    // 右側(子TODO選択時)の孫項目パネル用に、選択中の子TODOをラップし直す。
-    private void OnRootNodePropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(TodoNodeViewModel.SelectedChildTodo))
-            RebuildChildNode();
-    }
-
-    private void RebuildChildNode()
-    {
-        ChildNode?.Dispose();
-        ChildNode = RootNode.SelectedChildTodo is { } child ? new TodoNodeViewModel(child, _commandFileService) : null;
     }
 
     // パンくずリストを組み立てる。
@@ -221,8 +192,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // 破棄は必ずツリー全体の保有者であるLoadedRootに対して行う。
     public void Dispose()
     {
-        ChildNode?.Dispose();
-        RootNode.PropertyChanged -= OnRootNodePropertyChanged;
         RootNode.Dispose();
         _changeTracker.Dispose();
         _loadedRoot.Dispose();
