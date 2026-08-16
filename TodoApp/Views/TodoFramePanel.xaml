@@ -22,8 +22,7 @@
                 <Button Content="{x:Static resx:Strings.Button_ConvertToMemoList}"
                         Command="{Binding AddMemoCommand}" />
             </StackPanel>
-            <views:TodoDetailEditor Title="{Binding SelectedMemo.Title}"
-                                     Body="{Binding SelectedMemo.Body}" />
+            <views:TodoDetailEditor Body="{Binding SelectedMemo.Body}" />
         </DockPanel>
 
         <!-- 状況②③ : 左にリスト、右に詳細(または再帰的なTODOリスト表示)。 -->
@@ -57,7 +56,6 @@
                 <!-- NOTEリスト選択時(状況③)、または状況②で常に、選択中メモを表示する。 -->
                 <views:TodoDetailEditor Margin="{x:Static styles:LayoutConstants.TabContentMargin}"
                                          Visibility="{Binding ShowMemoDetail, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                         Title="{Binding SelectedMemo.Title}"
                                          Body="{Binding SelectedMemo.Body}" />
                 <!-- TODOリスト選択時(状況③)、選択中TODOを本レイアウトで再帰的に表示する。 -->
                 <!-- 子パネルの生成・破棄はコードビハインドでDispatcher遅延して行う(TodoFramePanel.xaml.cs参照)。 -->

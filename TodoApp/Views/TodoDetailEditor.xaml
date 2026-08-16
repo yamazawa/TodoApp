@@ -4,22 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:styles="clr-namespace:TodoApp.Styles"
-             xmlns:behaviors="clr-namespace:TodoApp.Behaviors"
              mc:Ignorable="d"
              x:Name="Root">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <TextBox Grid.Row="0" x:Name="TitleTextBox"
-                 Margin="{x:Static styles:LayoutConstants.FieldSpacing}"
-                 Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                 Text="{Binding Title, ElementName=Root, UpdateSourceTrigger=PropertyChanged}"
-                 behaviors:RevertOnLostFocusBehavior.IsEnabled="True" />
-        <TextBox Grid.Row="1" Padding="{x:Static styles:LayoutConstants.ControlPadding}"
-                 AcceptsReturn="True" TextWrapping="Wrap"
-                 VerticalScrollBarVisibility="Auto"
-                 Text="{Binding Body, ElementName=Root, UpdateSourceTrigger=PropertyChanged}" />
-    </Grid>
+    <TextBox Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+             AcceptsReturn="True" TextWrapping="Wrap"
+             VerticalScrollBarVisibility="Auto"
+             Text="{Binding Body, ElementName=Root, UpdateSourceTrigger=PropertyChanged}" />
 </UserControl>
