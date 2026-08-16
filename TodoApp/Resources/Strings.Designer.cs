@@ -170,20 +170,20 @@ namespace TodoApp.Resources {
         }
         
         /// <summary>
-        ///   子TODO に類似しているローカライズされた文字列を検索します。
+        ///   TODO に類似しているローカライズされた文字列を検索します。
         /// </summary>
-        public static string Tab_ChildTodo {
+        public static string Tab_TodoList {
             get {
-                return ResourceManager.GetString("Tab_ChildTodo", resourceCulture);
+                return ResourceManager.GetString("Tab_TodoList", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   メモ情報 に類似しているローカライズされた文字列を検索します。
+        ///   NOTE に類似しているローカライズされた文字列を検索します。
         /// </summary>
-        public static string Tab_Memo {
+        public static string Tab_NoteList {
             get {
-                return ResourceManager.GetString("Tab_Memo", resourceCulture);
+                return ResourceManager.GetString("Tab_NoteList", resourceCulture);
             }
         }
         
@@ -220,6 +220,42 @@ namespace TodoApp.Resources {
         public static string MemoTitle_Readme {
             get {
                 return ResourceManager.GetString("MemoTitle_Readme", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   対応中に変更 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_AdvanceToInProgress {
+            get {
+                return ResourceManager.GetString("Menu_AdvanceToInProgress", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   完了に変更 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Menu_AdvanceToDone {
+            get {
+                return ResourceManager.GetString("Menu_AdvanceToDone", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   TODOリストを追加 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Button_AddTodoList {
+            get {
+                return ResourceManager.GetString("Button_AddTodoList", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   メモ情報をリスト化 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Button_ConvertToMemoList {
+            get {
+                return ResourceManager.GetString("Button_ConvertToMemoList", resourceCulture);
             }
         }
     }

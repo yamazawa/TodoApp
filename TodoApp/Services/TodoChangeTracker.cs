@@ -92,7 +92,8 @@ public class TodoChangeTracker : IDisposable
         var saveInfo = new TodoSaveInfo(
             item.SelectedTabIndex,
             item.SelectedChildTodo is null ? null : item.ChildTodoList.IndexOf(item.SelectedChildTodo),
-            item.SelectedMemo is null ? null : item.MemoList.IndexOf(item.SelectedMemo));
+            item.SelectedMemo is null ? null : item.MemoList.IndexOf(item.SelectedMemo),
+            item.ListWidth);
 
         return new NodeSyncTask(item, parent, _rootParentDir, ordinal, item.Title, item.Status, memos, children, saveInfo);
     }
@@ -138,7 +139,8 @@ public class TodoChangeTracker : IDisposable
             return;
 
         if (e.PropertyName is nameof(TodoItem.Title) or nameof(TodoItem.Status)
-            or nameof(TodoItem.SelectedTabIndex) or nameof(TodoItem.SelectedChildTodo) or nameof(TodoItem.SelectedMemo))
+            or nameof(TodoItem.SelectedTabIndex) or nameof(TodoItem.SelectedChildTodo) or nameof(TodoItem.SelectedMemo)
+            or nameof(TodoItem.ListWidth))
             _dirtyNodes.Add(item);
     }
 

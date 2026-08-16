@@ -10,6 +10,8 @@
              mc:Ignorable="d"
              x:Name="Root">
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
         <!-- 子TODOリストのアイテムテンプレート -->
         <!-- 通常はテキスト表示、右クリック「編集」でTextBoxに切り替える -->
         <DataTemplate x:Key="ChildTodoItemTemplate">
@@ -27,6 +29,34 @@
                             <MenuItem Header="{x:Static resx:Strings.NavigateLink}"
                                       Command="{Binding Path=PlacementTarget.Tag.NavigateToChildCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding}" />
+                            <MenuItem Header="{x:Static resx:Strings.Menu_AdvanceToInProgress}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.AdvanceChildTodoStatusCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="{Binding}">
+                                <MenuItem.Style>
+                                    <Style TargetType="MenuItem">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Status}" Value="NotStarted">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </MenuItem.Style>
+                            </MenuItem>
+                            <MenuItem Header="{x:Static resx:Strings.Menu_AdvanceToDone}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.AdvanceChildTodoStatusCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="{Binding}">
+                                <MenuItem.Style>
+                                    <Style TargetType="MenuItem">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Status}" Value="InProgress">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </MenuItem.Style>
+                            </MenuItem>
                             <MenuItem Header="{x:Static resx:Strings.Menu_ConvertToMemo}"
                                       Command="{Binding Path=PlacementTarget.Tag.DataContext.ConvertChildTodoToMemoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <MenuItem Header="{x:Static resx:Strings.Button_Delete}"
@@ -119,52 +149,77 @@
         </Style>
     </UserControl.Resources>
 
-    <TabControl SelectedIndex="{Binding SelectedTabIndex}">
-        <!-- 幅が狭い孫項目パネルでもタブ見出しが潰れて選択不能にならないよう折り返す。 -->
-        <TabControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <WrapPanel />
-            </ItemsPanelTemplate>
-        </TabControl.ItemsPanel>
-        <TabItem Header="{Binding ChildTabHeader}">
-            <DockPanel Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
-                <!-- 項目のない箇所を右クリックすると追加を表示する。項目自体の右クリックは各項目のContextMenuが優先される。 -->
-                <ListBox x:Name="ChildTodoListBox"
-                         ItemsSource="{Binding Node.ChildTodoList}"
-                         SelectedItem="{Binding SelectedChildTodo}"
-                         ItemContainerStyle="{StaticResource ChildTodoListBoxItemStyle}"
-                         ItemTemplate="{StaticResource ChildTodoItemTemplate}">
-                    <ListBox.ContextMenu>
-                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Header="{x:Static resx:Strings.Button_Add}" Command="{Binding AddChildTodoCommand}" />
-                        </ContextMenu>
-                    </ListBox.ContextMenu>
-                    <ListBox.InputBindings>
-                        <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveChildTodoUpCommand}" />
-                        <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveChildTodoDownCommand}" />
-                    </ListBox.InputBindings>
-                </ListBox>
-            </DockPanel>
-        </TabItem>
-        <TabItem Header="{Binding MemoTabHeader}">
-            <DockPanel Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
-                <!-- 項目のない箇所を右クリックすると追加を表示する。項目自体の右クリックは各項目のContextMenuが優先される。 -->
-                <ListBox x:Name="MemoListBox"
-                         ItemsSource="{Binding Node.MemoList}"
-                         SelectedItem="{Binding SelectedMemo}"
-                         ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
-                         ItemTemplate="{StaticResource MemoItemTemplate}">
-                    <ListBox.ContextMenu>
-                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Header="{x:Static resx:Strings.Button_Add}" Command="{Binding AddMemoCommand}" />
-                        </ContextMenu>
-                    </ListBox.ContextMenu>
-                    <ListBox.InputBindings>
-                        <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveMemoUpCommand}" />
-                        <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveMemoDownCommand}" />
-                    </ListBox.InputBindings>
-                </ListBox>
-            </DockPanel>
-        </TabItem>
-    </TabControl>
+    <Grid>
+        <!-- 状況③ : 子TODOが1件以上 → タブ表示(TODOリスト/NOTEリスト)。 -->
+        <TabControl Visibility="{Binding HasChildTodo, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    SelectedIndex="{Binding SelectedTabIndex}">
+            <!-- 幅が狭い孫項目パネルでもタブ見出しが潰れて選択不能にならないよう折り返す。 -->
+            <TabControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </TabControl.ItemsPanel>
+            <TabItem Header="{Binding ChildTabHeader}">
+                <DockPanel Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
+                    <!-- 項目のない箇所を右クリックすると追加を表示する。項目自体の右クリックは各項目のContextMenuが優先される。 -->
+                    <ListBox x:Name="ChildTodoListBox"
+                             ItemsSource="{Binding Node.ChildTodoList}"
+                             SelectedItem="{Binding SelectedChildTodo}"
+                             ItemContainerStyle="{StaticResource ChildTodoListBoxItemStyle}"
+                             ItemTemplate="{StaticResource ChildTodoItemTemplate}">
+                        <ListBox.ContextMenu>
+                            <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="{x:Static resx:Strings.Button_Add}" Command="{Binding AddChildTodoCommand}" />
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                        <ListBox.InputBindings>
+                            <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveChildTodoUpCommand}" />
+                            <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveChildTodoDownCommand}" />
+                        </ListBox.InputBindings>
+                    </ListBox>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="{Binding MemoTabHeader}">
+                <DockPanel Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
+                    <!-- 項目のない箇所を右クリックすると追加を表示する。項目自体の右クリックは各項目のContextMenuが優先される。 -->
+                    <ListBox x:Name="MemoListBoxInTab"
+                             ItemsSource="{Binding Node.MemoList}"
+                             SelectedItem="{Binding SelectedMemo}"
+                             ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
+                             ItemTemplate="{StaticResource MemoItemTemplate}">
+                        <ListBox.ContextMenu>
+                            <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="{x:Static resx:Strings.Button_Add}" Command="{Binding AddMemoCommand}" />
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                        <ListBox.InputBindings>
+                            <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveMemoUpCommand}" />
+                            <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveMemoDownCommand}" />
+                        </ListBox.InputBindings>
+                    </ListBox>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+
+        <!-- 状況② : 子TODO0件、メモ2件以上 → タブ無しでメモ情報リストのみを表示する。 -->
+        <DockPanel Visibility="{Binding IsMemoListOnly, Converter={StaticResource BooleanToVisibilityConverter}}"
+                   Margin="{x:Static styles:LayoutConstants.TabContentMargin}">
+            <!-- 項目のない箇所を右クリックすると追加を表示する。項目自体の右クリックは各項目のContextMenuが優先される。 -->
+            <ListBox x:Name="MemoListBox"
+                     ItemsSource="{Binding Node.MemoList}"
+                     SelectedItem="{Binding SelectedMemo}"
+                     ItemContainerStyle="{StaticResource StretchListBoxItemStyle}"
+                     ItemTemplate="{StaticResource MemoItemTemplate}">
+                <ListBox.ContextMenu>
+                    <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                        <MenuItem Header="{x:Static resx:Strings.Button_Add}" Command="{Binding AddMemoCommand}" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+                <ListBox.InputBindings>
+                    <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveMemoUpCommand}" />
+                    <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveMemoDownCommand}" />
+                </ListBox.InputBindings>
+            </ListBox>
+        </DockPanel>
+    </Grid>
 </UserControl>

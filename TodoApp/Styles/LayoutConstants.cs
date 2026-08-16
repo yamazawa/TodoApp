@@ -19,11 +19,11 @@ public static class LayoutConstants
     public static readonly Thickness FieldSpacing = new(0, 0, 0, 4);
     public static readonly Thickness ControlPadding = new(4);
     public static readonly Thickness TabContentMargin = new(4);
+    public static readonly Thickness ButtonSpacing = new(0, 0, 8, 0);
 
     public static readonly GridLength SplitterThickness = new(4);
 
-    // 境界ドラッグで変更できる比率の上下限。0または1に張り付いて
-    // 反対側が消えてしまわないよう、両端に最低限の余地を残す。
-    public const double MinSplitRatio = 0.05;
-    public const double MaxSplitRatio = 1 - MinSplitRatio;
+    // ドラッグ操作を終えた位置が、null(自動サイズ)時の横幅とこの範囲内なら
+    // nullに丸めて、以後も内容に合わせた自動サイズを保つ。
+    public const double ListWidthSnapTolerance = 5;
 }

@@ -21,15 +21,19 @@ public partial class TodoItem : TitledItem
     private TodoStatus _status = TodoStatus.NotStarted;
 
     // 以下3つは表示用情報(④保存情報でTODO単位に保存する)。
-    // 0:子TODOタブ、1:メモ情報タブ
+    // 0:TODOリストタブ、1:NOTEリストタブ。既定はNOTEリストを優先する。
     [ObservableProperty]
-    private int _selectedTabIndex;
+    private int _selectedTabIndex = 1;
 
     [ObservableProperty]
     private TodoItem? _selectedChildTodo;
 
     [ObservableProperty]
     private MemoItem? _selectedMemo;
+
+    // リストの表示横幅。nullの場合は内容に合わせて自動サイズにする。
+    [ObservableProperty]
+    private double? _listWidth;
 
     public ObservableCollection<MemoItem> MemoList { get; } = [];
 
