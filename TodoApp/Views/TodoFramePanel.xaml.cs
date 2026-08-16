@@ -80,8 +80,10 @@ public partial class TodoFramePanel : UserControl
             _viewModel.ListWidth = width;
     }
 
-    // ドラッグを終えた位置が、null(自動サイズ)時に計算される幅と近ければnullに丸める。
-    // 以後も内容(タブ・リスト項目)に合わせた自動サイズを保つ。
+    // ドラッグを終えた位置が、null(自動サイズ)時に計算される幅以上かつ
+    // その差が許容範囲内ならnullに丸める。以後も内容(タブ・リスト項目)に
+    // 合わせた自動サイズを保つ。
+    // 自動サイズより狭める方向のドラッグは丸めない(そちらは意図的な縮小のため)。
     private void ListDetailSplitter_DragCompleted(object sender, DragCompletedEventArgs e)
     {
         if (_viewModel?.ListWidth is not { } currentWidth)
@@ -89,7 +91,8 @@ public partial class TodoFramePanel : UserControl
 
         ListPanel.Measure(new Size(double.PositiveInfinity, ListPanel.ActualHeight));
         var naturalWidth = ListPanel.DesiredSize.Width;
-        if (System.Math.Abs(currentWidth - naturalWidth) <= LayoutConstants.ListWidthSnapTolerance)
+        var diff = currentWidth - naturalWidth;
+        if (diff >= 0 && diff <= LayoutConstants.ListWidthSnapTolerance)
             _viewModel.ListWidth = null;
     }
 }
