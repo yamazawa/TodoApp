@@ -12,9 +12,7 @@ namespace TodoApp.Services;
 /// </summary>
 public static class TodoFileNaming
 {
-    public const string ReadmeFileName = "0_README.md";
     public const string SaveInfoFileName = "_save.json";
-    public const string NullTitlePlaceholder = "NULL";
 
     // 連番を1桁で表現するため、子TODO/メモ情報は共に最大9個までとする。
     public const int MaxItemCount = 9;
@@ -30,13 +28,13 @@ public static class TodoFileNaming
     /// <summary>
     /// TODOフォルダ名を作成する。[連番]_[タイトル]_[ステータス]
     /// </summary>
-    public static string BuildTodoFolderName(int ordinal, string? title, TodoStatus status) =>
+    public static string BuildTodoFolderName(int ordinal, string title, TodoStatus status) =>
         $"{ordinal}_{SanitizeTitle(title)}_{StatusToText(status)}";
 
     /// <summary>
     /// メモ情報ファイル名を作成する。[連番]_[タイトル].md
     /// </summary>
-    public static string BuildMemoFileName(int ordinal, string? title) =>
+    public static string BuildMemoFileName(int ordinal, string title) =>
         $"{ordinal}_{SanitizeTitle(title)}.md";
 
     /// <summary>
@@ -45,7 +43,7 @@ public static class TodoFileNaming
     /// タイトルに「_」が含まれていても解析できるよう、末尾のステータス文字列から先に照合する。
     /// 解析できない場合はnullを返す。
     /// </summary>
-    public static (string? Title, TodoStatus Status)? ParseTodoFolderName(string folderName)
+    public static (string Title, TodoStatus Status)? ParseTodoFolderName(string folderName)
     {
         var firstUnderscore = folderName.IndexOf('_');
         if (firstUnderscore < 0)
@@ -56,7 +54,7 @@ public static class TodoFileNaming
         {
             var suffix = "_" + textFactory();
             if (afterOrdinal.EndsWith(suffix, StringComparison.Ordinal))
-                return (ParseTitle(afterOrdinal[..^suffix.Length]), status);
+                return (afterOrdinal[..^suffix.Length], status);
         }
 
         return null;
@@ -70,14 +68,11 @@ public static class TodoFileNaming
     public static string? ParseMemoFileName(string fileNameWithoutExtension)
     {
         var separatorIndex = fileNameWithoutExtension.IndexOf('_');
-        return separatorIndex < 0 ? null : ParseTitle(fileNameWithoutExtension[(separatorIndex + 1)..]);
+        return separatorIndex < 0 ? null : fileNameWithoutExtension[(separatorIndex + 1)..];
     }
 
-    private static string SanitizeTitle(string? title)
+    private static string SanitizeTitle(string title)
     {
-        if (string.IsNullOrEmpty(title))
-            return NullTitlePlaceholder;
-
         var sanitized = title;
         foreach (var forbidden in ForbiddenChars)
         {
@@ -86,9 +81,6 @@ public static class TodoFileNaming
 
         return sanitized;
     }
-
-    private static string? ParseTitle(string rawTitle) =>
-        rawTitle == NullTitlePlaceholder ? null : rawTitle;
 
     private static string StatusToText(TodoStatus status) =>
         StatusMap.First(m => m.Status == status).TextFactory();

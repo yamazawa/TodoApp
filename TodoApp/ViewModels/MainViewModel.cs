@@ -3,7 +3,6 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TodoApp.Models;
-using TodoApp.Resources;
 using TodoApp.Services;
 
 namespace TodoApp.ViewModels;
@@ -183,22 +182,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     // パンくずリストを組み立てる。
-    // ①ファイルシステム上の祖先(ロード済みツリーの外側、フォルダ名の規則+README存在で判定)。
+    // ①ファイルシステム上の祖先(ロード済みツリーの外側、フォルダ名の規則+④保存情報の存在で判定)。
     // ②インメモリの祖先(ロード済みツリー内、移動リンクで下りてきた分)。
-    // ファイルの中身(本文)は見ない。
+    // ファイルの中身は見ない。
     private void RebuildBreadcrumbs()
     {
         var entries = new List<BreadcrumbEntry>();
         var candidate = _rootParentDir;
 
         while (TodoFileNaming.ParseTodoFolderName(Path.GetFileName(candidate)) is { } parsed &&
-               File.Exists(Path.Combine(candidate, TodoFileNaming.ReadmeFileName)))
+               File.Exists(Path.Combine(candidate, TodoFileNaming.SaveInfoFileName)))
         {
             var parentDir = Path.GetDirectoryName(candidate);
             if (parentDir is null)
                 break;
 
-            entries.Add(new BreadcrumbEntry(parsed.Title ?? Strings.Breadcrumb_NullTitle, TargetTodo: null, parentDir));
+            entries.Add(new BreadcrumbEntry(parsed.Title, TargetTodo: null, parentDir));
             candidate = parentDir;
         }
 
@@ -211,7 +210,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         inMemoryAncestors.Reverse();
-        entries.AddRange(inMemoryAncestors.Select(t => new BreadcrumbEntry(t.DisplayTitle, t, ParentDir: null)));
+        entries.AddRange(inMemoryAncestors.Select(t => new BreadcrumbEntry(t.Title, t, ParentDir: null)));
 
         Breadcrumbs = entries;
     }

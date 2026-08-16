@@ -22,7 +22,7 @@ public class TodoFileReader
         var rootFolder = Directory.GetDirectories(parentDir)
             .FirstOrDefault(dir => TodoFileNaming.ParseTodoFolderName(Path.GetFileName(dir)) is not null);
 
-        return rootFolder is null ? new TodoItem() : LoadTodo(rootFolder);
+        return rootFolder is null ? TodoItem.CreateNew() : LoadTodo(rootFolder);
     }
 
     private TodoItem LoadTodo(string folderPath)
@@ -30,10 +30,11 @@ public class TodoFileReader
         var parsed = TodoFileNaming.ParseTodoFolderName(Path.GetFileName(folderPath));
         var todo = new TodoItem
         {
-            Title = parsed?.Title,
             Status = parsed?.Status ?? Models.Enums.TodoStatus.NotStarted,
-            Body = ReadReadme(folderPath),
         };
+
+        if (parsed is { } parsedValue)
+            todo.Title = parsedValue.Title;
 
         foreach (var dir in Directory.GetDirectories(folderPath).OrderBy(GetOrdinal))
         {
@@ -43,11 +44,11 @@ public class TodoFileReader
 
         foreach (var file in Directory.GetFiles(folderPath, "*.md").OrderBy(GetOrdinal))
         {
-            if (Path.GetFileName(file) == TodoFileNaming.ReadmeFileName)
-                continue;
+            var memo = new MemoItem { Body = File.ReadAllText(file) };
+            if (TodoFileNaming.ParseMemoFileName(Path.GetFileNameWithoutExtension(file)) is { } title)
+                memo.Title = title;
 
-            var title = TodoFileNaming.ParseMemoFileName(Path.GetFileNameWithoutExtension(file));
-            todo.MemoList.Add(new MemoItem { Title = title, Body = File.ReadAllText(file) });
+            todo.MemoList.Add(memo);
         }
 
         ApplySaveInfo(todo, folderPath);
@@ -79,12 +80,6 @@ public class TodoFileReader
         {
             // 壊れた保存情報は無視する。
         }
-    }
-
-    private static string ReadReadme(string folderPath)
-    {
-        var readmePath = Path.Combine(folderPath, TodoFileNaming.ReadmeFileName);
-        return File.Exists(readmePath) ? File.ReadAllText(readmePath) : string.Empty;
     }
 
     private static int GetOrdinal(string path)
