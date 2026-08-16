@@ -11,8 +11,8 @@ namespace TodoApp;
 /// </summary>
 public partial class App : Application
 {
-    // ⑤アプリ全体設定に起動フォルダパスが無い場合の既定値。
-    private static readonly string DefaultRootParentDir =
+    // iniファイル・⑤アプリ全体設定のどちらにも起動フォルダパスが無い場合の既定値。
+    private static readonly string FallbackRootParentDir =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TodoApp");
 
     private static readonly TimeSpan AutoSaveInterval = TimeSpan.FromSeconds(1);
@@ -26,8 +26,11 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        var rootDirConfigService = new RootDirConfigService();
+        var defaultRootParentDir = rootDirConfigService.LoadOrCreateDefault(FallbackRootParentDir);
+
         _settingsService = new AppSettingsService();
-        var appSettings = _settingsService.LoadOrCreateDefault(DefaultRootParentDir);
+        var appSettings = _settingsService.LoadOrCreateDefault(defaultRootParentDir);
 
         var fileReader = new TodoFileReader();
         _commandFileService = new TodoCommandFileService();
