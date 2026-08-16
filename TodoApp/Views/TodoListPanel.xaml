@@ -15,7 +15,7 @@
         <DataTemplate x:Key="ChildTodoItemTemplate">
             <Grid>
                 <TextBlock x:Name="DisplayText"
-                           Text="{Binding DisplayTitle}"
+                           Text="{Binding Title}"
                            Padding="{x:Static styles:LayoutConstants.ControlPadding}"
                            Tag="{Binding ElementName=Root}">
                     <TextBlock.ContextMenu>
@@ -40,7 +40,8 @@
                          HorizontalAlignment="Stretch"
                          BorderThickness="0" Background="Transparent"
                          Visibility="Collapsed"
-                         behaviors:FocusBehavior.IsFocused="{Binding IsEditing}">
+                         behaviors:FocusBehavior.IsFocused="{Binding IsEditing}"
+                         behaviors:RevertOnLostFocusBehavior.IsEnabled="True">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="LostFocus">
                             <i:InvokeCommandAction Command="{Binding EndEditCommand}" />
@@ -60,7 +61,7 @@
         <DataTemplate x:Key="MemoItemTemplate">
             <Grid>
                 <TextBlock x:Name="DisplayText"
-                           Text="{Binding DisplayTitle}"
+                           Text="{Binding Title}"
                            Padding="{x:Static styles:LayoutConstants.ControlPadding}"
                            Tag="{Binding ElementName=Root}">
                     <TextBlock.ContextMenu>
@@ -82,7 +83,8 @@
                          HorizontalAlignment="Stretch"
                          BorderThickness="0" Background="Transparent"
                          Visibility="Collapsed"
-                         behaviors:FocusBehavior.IsFocused="{Binding IsEditing}">
+                         behaviors:FocusBehavior.IsFocused="{Binding IsEditing}"
+                         behaviors:RevertOnLostFocusBehavior.IsEnabled="True">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="LostFocus">
                             <i:InvokeCommandAction Command="{Binding EndEditCommand}" />

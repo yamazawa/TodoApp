@@ -15,11 +15,7 @@ public partial class TodoDetailEditor : UserControl
 {
     public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
         nameof(Title), typeof(string), typeof(TodoDetailEditor),
-        new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-    // タイトルがnullの間、フォーカスが無いときに代わりに表示する文字列(本文の1行目)。
-    public static readonly DependencyProperty DisplayTitleProperty = DependencyProperty.Register(
-        nameof(DisplayTitle), typeof(string), typeof(TodoDetailEditor), new PropertyMetadata(string.Empty));
+        new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
     public static readonly DependencyProperty BodyProperty = DependencyProperty.Register(
         nameof(Body), typeof(string), typeof(TodoDetailEditor),
@@ -52,16 +48,10 @@ public partial class TodoDetailEditor : UserControl
         InitializeComponent();
     }
 
-    public string? Title
+    public string Title
     {
-        get => (string?)GetValue(TitleProperty);
+        get => (string)GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
-    }
-
-    public string DisplayTitle
-    {
-        get => (string)GetValue(DisplayTitleProperty);
-        set => SetValue(DisplayTitleProperty, value);
     }
 
     public string Body
