@@ -36,6 +36,7 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
             Node.SelectedChildTodo = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SelectedEntry));
             NotifyChildTodoCommands();
             RebuildChildNode();
         }
@@ -51,6 +52,8 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
             Node.SelectedMemo = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SelectedEntry));
+            OnPropertyChanged(nameof(ListEntries));
             NotifyMemoCommands();
         }
     }
@@ -83,9 +86,11 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(IsMemoTabSelected));
             OnPropertyChanged(nameof(ShowMemoDetail));
             OnPropertyChanged(nameof(ShowChildFrame));
+            OnPropertyChanged(nameof(SelectedEntry));
         }
     }
 
+    // 0:TODO表示中、1:NOTE表示中(タブ廃止後も右側の表示モードとして使う)。既定はNOTEを優先する。
     public bool IsChildTabSelected => SelectedTabIndex == 0;
 
     public bool IsMemoTabSelected => SelectedTabIndex == 1;
@@ -98,12 +103,10 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
     public bool IsListless => !HasChildTodo && !HasMultipleMemos;
 
-    public bool HasList => !IsListless;
+    // 状況② : 子TODO0件、メモ2件以上 → NOTE一覧タブ+本文のみを表示する。
+    public bool IsMemoListOnly => !HasChildTodo && HasMultipleMemos;
 
-    // 状況② : 子TODO0件、メモ2件以上 → タブ無しでメモ情報リストのみを表示する。
-    public bool IsMemoListOnly => !HasChildTodo;
-
-    // 右側(詳細)の表示切り替え。状況②は常にメモ、状況③は選択中タブに従う。
+    // 右側(詳細)の表示切り替え。状況②は常にメモ、状況③は選択中エントリに従う。
     public bool ShowMemoDetail => IsMemoListOnly || IsMemoTabSelected;
 
     public bool ShowChildFrame => HasChildTodo && IsChildTabSelected;
@@ -112,10 +115,37 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private TodoNodeViewModel? _childNode;
 
-    // タブ見出し。子TODOは完了数/総数、メモ情報は総数を添える。
-    public string ChildTabHeader => $"{Strings.Tab_TodoList}({Node.ChildTodoList.Count(c => c.Status == TodoStatus.Done)}/{Node.ChildTodoList.Count})";
+    // 状況③のリスト表示。先頭に選択中NOTEを1件、その後にTODOを順に並べる。
+    public IEnumerable<object> ListEntries
+    {
+        get
+        {
+            if (Node.SelectedMemo is { } memo)
+                yield return memo;
 
-    public string MemoTabHeader => $"{Strings.Tab_NoteList}({Node.MemoList.Count})";
+            foreach (var child in Node.ChildTodoList)
+                yield return child;
+        }
+    }
+
+    // 状況③のリストの選択項目。NOTEエントリ選択でNOTEモード、TODO項目選択でTODOモードに切り替える。
+    public object? SelectedEntry
+    {
+        get => IsMemoTabSelected ? (object?)Node.SelectedMemo : SelectedChildTodo;
+        set
+        {
+            switch (value)
+            {
+                case MemoItem:
+                    SelectedTabIndex = 1;
+                    break;
+                case TodoItem todo:
+                    SelectedTabIndex = 0;
+                    SelectedChildTodo = todo;
+                    break;
+            }
+        }
+    }
 
     public TodoNodeViewModel(TodoItem node, TodoCommandFileService commandFileService)
     {
@@ -137,22 +167,21 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
     private void OnChildTodoListChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        OnPropertyChanged(nameof(ChildTabHeader));
         OnPropertyChanged(nameof(HasChildTodo));
         OnPropertyChanged(nameof(IsListless));
-        OnPropertyChanged(nameof(HasList));
         OnPropertyChanged(nameof(IsMemoListOnly));
         OnPropertyChanged(nameof(ShowMemoDetail));
         OnPropertyChanged(nameof(ShowChildFrame));
+        OnPropertyChanged(nameof(ListEntries));
         NotifyChildTodoCommands();
     }
 
     private void OnMemoListChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        OnPropertyChanged(nameof(MemoTabHeader));
         OnPropertyChanged(nameof(HasMultipleMemos));
         OnPropertyChanged(nameof(IsListless));
-        OnPropertyChanged(nameof(HasList));
+        OnPropertyChanged(nameof(IsMemoListOnly));
+        OnPropertyChanged(nameof(ShowMemoDetail));
         NotifyMemoCommands();
     }
 
