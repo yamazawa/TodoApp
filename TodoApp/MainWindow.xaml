@@ -23,6 +23,7 @@
         </ResourceDictionary>
     </Window.Resources>
     <Grid Margin="{x:Static styles:LayoutConstants.RootMargin}"
+          Background="Transparent"
           behaviors:ClearFocusOnClickBehavior.IsEnabled="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
