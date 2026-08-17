@@ -4,8 +4,9 @@ using System.Windows.Controls;
 namespace TodoApp.Behaviors;
 
 /// <summary>
-/// フォーカスアウト時、TextBox.Textをバインド元の値に再同期するビヘイビア
+/// フォーカスアウト時に入力を確定し、TextBox.Textをバインド元の値に再同期するビヘイビア
 ///
+/// UpdateSourceTrigger=Explicitと組み合わせて使う。
 /// タイトルは空文字を拒否してバインド元の値を変えないため、
 /// 空のまま確定しようとした場合は表示だけが元の値に戻る。
 /// </summary>
@@ -35,7 +36,11 @@ public static class RevertOnLostFocusBehavior
 
     private static void OnLostFocus(object sender, RoutedEventArgs e)
     {
-        if (sender is TextBox textBox)
-            textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
+        if (sender is not TextBox textBox)
+            return;
+
+        var expression = textBox.GetBindingExpression(TextBox.TextProperty);
+        expression?.UpdateSource();
+        expression?.UpdateTarget();
     }
 }
