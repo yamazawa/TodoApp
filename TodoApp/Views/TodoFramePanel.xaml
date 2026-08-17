@@ -25,12 +25,16 @@
             <views:TodoDetailEditor Body="{Binding SelectedMemo.Body}" />
         </DockPanel>
 
-        <!-- 状況②③ : 左にリスト、右に詳細(または再帰的なTODOリスト表示)。 -->
-        <Grid Visibility="{Binding HasList, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <!-- 状況② : 子TODO0件、メモ2件以上 → 左右分割なしでNOTE一覧タブ+本文のみを表示する。 -->
+        <views:NoteTabPanel DataContext="{Binding}"
+                            Visibility="{Binding IsMemoListOnly, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+        <!-- 状況③ : 子TODOが1件以上 → 左にリスト、右に詳細(または再帰的なTODOリスト表示)。 -->
+        <Grid Visibility="{Binding HasChildTodo, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <!-- リストは表示横幅(TODO単位の表示情報)を優先し、nullなら内容に合わせて自動サイズにする。 -->
-                <!-- Auto(=null)は無限幅で測るため、タブ2つ・リスト項目のテキストが -->
-                <!-- 見切れない幅に自然と収まる。ドラッグ操作では最小幅を設けない。 -->
+                <!-- Auto(=null)は無限幅で測るため、リスト項目のテキストが見切れない幅に自然と収まる。 -->
+                <!-- ドラッグ操作では最小幅を設けない。 -->
                 <!-- WidthはXAMLで直接バインドせず、SplitterColumnWidthBehaviorがSetCurrentValueで -->
                 <!-- 反映する(GridSplitterの直接書き込みとバインドが競合しないようにするため)。 -->
                 <ColumnDefinition x:Name="LeftColumn" Width="Auto" />
@@ -51,13 +55,12 @@
                           behaviors:SplitterColumnWidthBehavior.Width="{Binding ListWidth}" />
 
             <!-- Marginは付けない(再帰するたびに積み重なって縦幅が縮んでしまうため)。 -->
-            <!-- 余白が必要なメモ表示側にだけ個別に付ける。 -->
+            <!-- 余白が必要なNOTE表示側にだけ個別に付ける(NoteTabPanel内部で付与)。 -->
             <Grid Grid.Column="2">
-                <!-- NOTEリスト選択時(状況③)、または状況②で常に、選択中メモを表示する。 -->
-                <views:TodoDetailEditor Margin="{x:Static styles:LayoutConstants.TabContentMargin}"
-                                         Visibility="{Binding ShowMemoDetail, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                         Body="{Binding SelectedMemo.Body}" />
-                <!-- TODOリスト選択時(状況③)、選択中TODOを本レイアウトで再帰的に表示する。 -->
+                <!-- NOTEエントリ選択時(状況③)、選択中NOTEをタブ+本文で表示する。 -->
+                <views:NoteTabPanel DataContext="{Binding}"
+                                    Visibility="{Binding ShowMemoDetail, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <!-- TODO項目選択時(状況③)、選択中TODOを本レイアウトで再帰的に表示する。 -->
                 <!-- 子パネルの生成・破棄はコードビハインドでDispatcher遅延して行う(TodoFramePanel.xaml.cs参照)。 -->
                 <!-- 階層を重ねても縦幅が縮まないよう、明示的にStretchを指定する。 -->
                 <ContentControl x:Name="ChildFrameHost"
