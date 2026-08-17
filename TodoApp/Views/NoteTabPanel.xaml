@@ -1,0 +1,81 @@
+<UserControl x:Class="TodoApp.Views.NoteTabPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:styles="clr-namespace:TodoApp.Styles"
+             xmlns:resx="clr-namespace:TodoApp.Resources"
+             xmlns:behaviors="clr-namespace:TodoApp.Behaviors"
+             xmlns:views="clr-namespace:TodoApp.Views"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             mc:Ignorable="d"
+             x:Name="Root">
+    <UserControl.Resources>
+        <!-- NOTEタブのヘッダーテンプレート。 -->
+        <!-- 通常はテキスト表示、右クリック「編集」でTextBoxに切り替える -->
+        <DataTemplate x:Key="MemoTabHeaderTemplate">
+            <Grid>
+                <TextBlock x:Name="DisplayText"
+                           Text="{Binding Title}"
+                           Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+                           Tag="{Binding ElementName=Root}">
+                    <TextBlock.ContextMenu>
+                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="{x:Static resx:Strings.Menu_Open}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.OpenMemoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="{x:Static resx:Strings.Menu_Edit}"
+                                      Command="{Binding StartEditCommand}" />
+                            <MenuItem Header="{x:Static resx:Strings.Menu_ConvertToChildTodo}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.ConvertMemoToChildTodoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="{x:Static resx:Strings.Button_Delete}"
+                                      Command="{Binding Path=PlacementTarget.Tag.DataContext.DeleteMemoCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        </ContextMenu>
+                    </TextBlock.ContextMenu>
+                </TextBlock>
+                <TextBox x:Name="EditBox"
+                         Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="{x:Static styles:LayoutConstants.ControlPadding}"
+                         HorizontalAlignment="Stretch"
+                         BorderThickness="0" Background="Transparent"
+                         Visibility="Collapsed"
+                         behaviors:FocusBehavior.IsFocused="{Binding IsEditing}"
+                         behaviors:RevertOnLostFocusBehavior.IsEnabled="True">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="LostFocus">
+                            <i:InvokeCommandAction Command="{Binding EndEditCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBox>
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                    <Setter TargetName="DisplayText" Property="Visibility" Value="Collapsed" />
+                    <Setter TargetName="EditBox" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <!-- NOTE本文の上にNOTE一覧タブを表示する。 -->
+    <!-- タブ以外の箇所を右クリックすると追加を表示する。タブ自体の右クリックは各タブのContextMenuが優先される。 -->
+    <TabControl ItemsSource="{Binding Node.MemoList}"
+                SelectedItem="{Binding SelectedMemo}">
+        <TabControl.ItemContainerStyle>
+            <Style TargetType="TabItem">
+                <Setter Property="Header" Value="{Binding}" />
+                <Setter Property="HeaderTemplate" Value="{StaticResource MemoTabHeaderTemplate}" />
+            </Style>
+        </TabControl.ItemContainerStyle>
+        <TabControl.ContentTemplate>
+            <DataTemplate>
+                <views:TodoDetailEditor Margin="{x:Static styles:LayoutConstants.TabContentMargin}"
+                                         Body="{Binding Body}" />
+            </DataTemplate>
+        </TabControl.ContentTemplate>
+        <TabControl.ContextMenu>
+            <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                <MenuItem Header="{x:Static resx:Strings.Button_Add}" Command="{Binding AddMemoCommand}" />
+            </ContextMenu>
+        </TabControl.ContextMenu>
+    </TabControl>
+</UserControl>

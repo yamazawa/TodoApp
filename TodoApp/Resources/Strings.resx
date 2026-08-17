@@ -61,12 +61,6 @@
   <data name="WindowTitle" xml:space="preserve">
     <value>TODOアプリ</value>
   </data>
-  <data name="Tab_TodoList" xml:space="preserve">
-    <value>TODO</value>
-  </data>
-  <data name="Tab_NoteList" xml:space="preserve">
-    <value>NOTE</value>
-  </data>
   <data name="Button_Add" xml:space="preserve">
     <value>追加</value>
   </data>

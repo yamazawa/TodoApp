@@ -21,7 +21,7 @@ public partial class TodoItem : TitledItem
     private TodoStatus _status = TodoStatus.NotStarted;
 
     // 以下3つは表示用情報(④保存情報でTODO単位に保存する)。
-    // 0:TODOリストタブ、1:NOTEリストタブ。既定はNOTEリストを優先する。
+    // 0:TODO表示、1:NOTE表示。既定はNOTE表示を優先する。
     [ObservableProperty]
     private int _selectedTabIndex = 1;
 
