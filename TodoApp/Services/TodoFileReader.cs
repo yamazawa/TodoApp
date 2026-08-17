@@ -52,7 +52,16 @@ public class TodoFileReader
         }
 
         ApplySaveInfo(todo, folderPath);
+        ApplyDefaultSelection(todo);
         return todo;
+    }
+
+    // 保存情報に選択状態が無い場合、先頭の子TODO/メモ情報を既定選択する。
+    // 未選択のままだと右側の詳細表示が空欄になってしまうため。
+    private static void ApplyDefaultSelection(TodoItem todo)
+    {
+        todo.SelectedChildTodo ??= todo.ChildTodoList.FirstOrDefault();
+        todo.SelectedMemo ??= todo.MemoList.FirstOrDefault();
     }
 
     // ④保存情報(表示用情報)を読み込む。ファイルが無い/壊れている場合は既定値のまま。
