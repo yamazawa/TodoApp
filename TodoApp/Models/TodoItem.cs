@@ -58,7 +58,9 @@ public partial class TodoItem : TitledItem
     public static TodoItem CreateNew()
     {
         var item = new TodoItem();
-        item.MemoList.Add(new MemoItem { Title = Strings.MemoTitle_Readme });
+        var memo = new MemoItem { Title = Strings.MemoTitle_Readme };
+        item.MemoList.Add(memo);
+        item.SelectedMemo = memo;
         return item;
     }
 
