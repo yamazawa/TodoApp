@@ -38,6 +38,7 @@ public static class ClearFocusOnClickBehavior
 
     // クリック位置の祖先にControl(TextBox・Button・ListBoxItem等)が無ければ、
     // 何もない場所とみなしてフォーカスを外す。
+    // Window自身もControlを継承しているため、祖先探索からは除外する。
     private static void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.OriginalSource is DependencyObject source && FindAncestorControl(source) is null)
@@ -48,8 +49,8 @@ public static class ClearFocusOnClickBehavior
     {
         for (var current = source; current is not null; current = GetParent(current))
         {
-            if (current is Control control)
-                return control;
+            if (current is Control and not Window)
+                return (Control)current;
         }
 
         return null;
