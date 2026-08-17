@@ -41,8 +41,16 @@ public static class ClearFocusOnClickBehavior
     // Window自身もControlを継承しているため、祖先探索からは除外する。
     private static void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.OriginalSource is DependencyObject source && FindAncestorControl(source) is null)
-            Keyboard.ClearFocus();
+        if (e.OriginalSource is not DependencyObject source || FindAncestorControl(source) is not null)
+            return;
+
+        // Keyboard.ClearFocus()はキーボードフォーカスのみを外し、
+        // TextBox.LostFocus(論理フォーカス)は発火しない。
+        // FocusManagerで論理フォーカスも明示的に外す必要がある。
+        if (sender is DependencyObject scopeOwner)
+            FocusManager.SetFocusedElement(FocusManager.GetFocusScope(scopeOwner), null);
+
+        Keyboard.ClearFocus();
     }
 
     private static Control? FindAncestorControl(DependencyObject source)
