@@ -7,6 +7,7 @@
         xmlns:styles="clr-namespace:TodoApp.Styles"
         xmlns:resx="clr-namespace:TodoApp.Resources"
         xmlns:views="clr-namespace:TodoApp.Views"
+        xmlns:behaviors="clr-namespace:TodoApp.Behaviors"
         mc:Ignorable="d"
         Title="{x:Static resx:Strings.WindowTitle}"
         Height="{Binding WindowHeight, Mode=TwoWay}"
@@ -21,7 +22,8 @@
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         </ResourceDictionary>
     </Window.Resources>
-    <Grid Margin="{x:Static styles:LayoutConstants.RootMargin}">
+    <Grid Margin="{x:Static styles:LayoutConstants.RootMargin}"
+          behaviors:ClearFocusOnClickBehavior.IsEnabled="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
