@@ -94,7 +94,7 @@
                     </TextBlock.ContextMenu>
                 </TextBlock>
                 <TextBox Grid.Column="1" x:Name="EditBox"
-                         Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding Title, UpdateSourceTrigger=Explicit}"
                          Padding="{x:Static styles:LayoutConstants.ControlPadding}"
                          HorizontalAlignment="Stretch"
                          BorderThickness="0" Background="Transparent"
