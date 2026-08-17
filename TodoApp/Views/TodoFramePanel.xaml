@@ -26,8 +26,13 @@
         </DockPanel>
 
         <!-- 状況② : 子TODO0件、メモ2件以上 → 左右分割なしでNOTE一覧タブ+本文のみを表示する。 -->
-        <views:NoteTabPanel DataContext="{Binding}"
-                            Visibility="{Binding IsMemoListOnly, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        <DockPanel Visibility="{Binding IsMemoListOnly, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="{x:Static styles:LayoutConstants.FieldSpacing}">
+                <Button Content="{x:Static resx:Strings.Button_AddTodoList}"
+                        Command="{Binding AddChildTodoCommand}" />
+            </StackPanel>
+            <views:NoteTabPanel DataContext="{Binding}" />
+        </DockPanel>
 
         <!-- 状況③ : 子TODOが1件以上 → 左にリスト、右に詳細(または再帰的なTODOリスト表示)。 -->
         <Grid Visibility="{Binding HasChildTodo, Converter={StaticResource BooleanToVisibilityConverter}}">
