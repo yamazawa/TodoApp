@@ -17,7 +17,6 @@
         <!-- 状況③のリスト先頭に並べる、選択中NOTEのピン留め表示。タイトルのみ表示し、選択でNOTEモードに切り替える。 -->
         <DataTemplate DataType="{x:Type models:MemoItem}">
             <TextBlock Text="{Binding Title}"
-                       FontStyle="Italic"
                        Padding="{x:Static styles:LayoutConstants.ControlPadding}" />
         </DataTemplate>
 
