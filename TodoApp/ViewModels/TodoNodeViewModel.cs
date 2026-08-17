@@ -87,6 +87,8 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(ShowMemoDetail));
             OnPropertyChanged(nameof(ShowChildFrame));
             OnPropertyChanged(nameof(SelectedEntry));
+            MoveChildTodoUpCommand.NotifyCanExecuteChanged();
+            MoveChildTodoDownCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -359,8 +361,12 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
     }
 
     // 子TODOは自動ソート優先のため、ステータスが同じ項目同士でしか入れ替えない。
+    // リスト先頭のNOTEエントリ選択中は、非表示のTODO選択が誤って動かないよう対象外にする。
     private void MoveChildTodo(int delta)
     {
+        if (!IsChildTabSelected)
+            return;
+
         var list = Node.ChildTodoList;
         if (TryGetMoveIndices(list, SelectedChildTodo, delta) is not { } indices)
             return;
@@ -373,6 +379,9 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
     private bool CanMoveChildTodo(int delta)
     {
+        if (!IsChildTabSelected)
+            return false;
+
         var list = Node.ChildTodoList;
         if (TryGetMoveIndices(list, SelectedChildTodo, delta) is not { } indices)
             return false;
