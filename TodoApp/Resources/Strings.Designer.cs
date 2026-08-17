@@ -170,24 +170,6 @@ namespace TodoApp.Resources {
         }
         
         /// <summary>
-        ///   TODO に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string Tab_TodoList {
-            get {
-                return ResourceManager.GetString("Tab_TodoList", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   NOTE に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string Tab_NoteList {
-            get {
-                return ResourceManager.GetString("Tab_NoteList", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   TODOアプリ に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string WindowTitle {
