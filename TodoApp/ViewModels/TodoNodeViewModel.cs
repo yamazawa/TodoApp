@@ -340,6 +340,7 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         Node.MemoList.Remove(memo);
         SelectedMemo = null;
         newItem.MemoList.Add(memo);
+        newItem.SelectedMemo = memo;
         Node.AddChild(newItem);
 
         SelectedTabIndex = 0;
