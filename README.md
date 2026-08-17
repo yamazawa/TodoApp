@@ -3,14 +3,16 @@
 WPF (.NET) + MVVM (CommunityToolkit.Mvvm) で作成する階層型TODO管理デスクトップアプリです。
 
 開発はアジャイルのスプリント単位([SP1]、[SP2]、...)で進めています。
-現在の開発ルールは以下を参照してください。
+開発ルールは別リポジトリで一元管理しています。
 
-- `docs/ガイドライン.md`
+- https://github.com/yamazawa/DevGuidelines
 
-初期仕様(クローズ済み、実装に反映済み)は以下を参照してください。
+クローズ済みスプリントの仕様書・実装方針(実装に反映済み)は以下を参照してください。
 
 - `docs/archive/SP1/TODOアプリ_仕様書.md`
 - `docs/archive/SP1/TODOアプリ_実装方針.md`
+- `docs/archive/SP2/TODOアプリ_仕様書.md`
+- `docs/archive/SP2/TODOアプリ_実装方針.md`
 
 ## 動作環境
 
