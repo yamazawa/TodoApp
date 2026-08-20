@@ -14,8 +14,11 @@ public static class ClaudeSessionLauncher
     /// </summary>
     public static void Launch(string folderPath, string sessionId, string instruction)
     {
+        // 実際に渡している値をウィンドウ上で確認できるよう、実行前に表示する。
         var command =
             $"Set-Location -LiteralPath '{EscapeSingleQuote(folderPath)}'; " +
+            $"Write-Host 'SessionId: {EscapeSingleQuote(sessionId)}'; " +
+            $"Write-Host 'Instruction: {EscapeSingleQuote(instruction)}'; " +
             $"claude --resume '{EscapeSingleQuote(sessionId)}' '{EscapeSingleQuote(instruction)}'";
 
         var startInfo = new ProcessStartInfo
