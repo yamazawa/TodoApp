@@ -22,6 +22,9 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 {
     public static IReadOnlyList<TodoStatus> StatusOptions { get; } = Enum.GetValues<TodoStatus>();
 
+    // このタイトルのメモ情報を、Claudeセッションの再開情報(本文=セッションID)として扱う。
+    private const string ClaudeMemoTitle = "Claude";
+
     private readonly TodoCommandFileService _commandFileService;
 
     public TodoItem Node { get; }
@@ -57,6 +60,12 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
             NotifyMemoCommands();
         }
     }
+
+    // Claudeへ渡す命令文の入力欄。表示専用の一時的な状態で、ファイルには保存しない。
+    [ObservableProperty]
+    private string _claudeInstruction = string.Empty;
+
+    partial void OnClaudeInstructionChanged(string value) => SendToClaudeCommand.NotifyCanExecuteChanged();
 
     // リストの表示横幅。nullの場合は内容に合わせて自動サイズにする(TodoFramePanelが解釈する)。
     public double? ListWidth
@@ -205,6 +214,7 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         MoveMemoDownCommand.NotifyCanExecuteChanged();
         ConvertMemoToChildTodoCommand.NotifyCanExecuteChanged();
         OpenMemoCommand.NotifyCanExecuteChanged();
+        SendToClaudeCommand.NotifyCanExecuteChanged();
     }
 
     // 状況①からTODOリストを追加し、状況③へ遷移する。追加項目をすぐ編集できるようタブを合わせる。
@@ -260,6 +270,24 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
     // メモ情報リストは最低1件を保持するため、2件以上のときのみ削除できる。
     private bool CanDeleteMemo() => SelectedMemo is not null && Node.MemoList.Count > 1;
+
+    // NOTE一覧の「Claude」メモ(本文=セッションID)を対象に、新規PowerShellウィンドウで
+    // セッションを再開しつつClaudeInstructionを命令文として渡す。
+    [RelayCommand(CanExecute = nameof(CanSendToClaude))]
+    private void SendToClaude()
+    {
+        if (FindClaudeMemo() is not { } memo)
+            return;
+
+        if (_commandFileService.TryGetPath(Node) is not { } folderPath)
+            return;
+
+        ClaudeSessionLauncher.Launch(folderPath, memo.Body.Trim(), ClaudeInstruction);
+    }
+
+    private bool CanSendToClaude() => !string.IsNullOrWhiteSpace(ClaudeInstruction) && FindClaudeMemo() is not null;
+
+    private MemoItem? FindClaudeMemo() => Node.MemoList.FirstOrDefault(m => m.Title == ClaudeMemoTitle);
 
     [RelayCommand(CanExecute = nameof(CanOpenChildTodo))]
     private void OpenChildTodo()

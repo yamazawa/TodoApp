@@ -21,6 +21,11 @@
                         Command="{Binding AddChildTodoCommand}" />
                 <Button Content="{x:Static resx:Strings.Button_ConvertToMemoList}"
                         Command="{Binding AddMemoCommand}" />
+                <TextBox Width="{x:Static styles:LayoutConstants.ClaudeInstructionWidth}"
+                         Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
+                         Text="{Binding ClaudeInstruction, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Content="{x:Static resx:Strings.Button_RunClaude}"
+                        Command="{Binding SendToClaudeCommand}" />
             </StackPanel>
             <views:TodoDetailEditor Body="{Binding SelectedMemo.Body}" />
         </DockPanel>

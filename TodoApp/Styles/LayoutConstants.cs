@@ -30,4 +30,7 @@ public static class LayoutConstants
     // 子TODOリスト項目のステータスアイコン。
     public const double StatusIconSize = 16;
     public static readonly Thickness StatusIconMargin = new(4, 0, 0, 0);
+
+    // Claudeへの命令文入力欄。
+    public const double ClaudeInstructionWidth = 150;
 }
