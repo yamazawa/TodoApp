@@ -19,6 +19,7 @@ public partial class App : Application
 
     private MainViewModel? _viewModel;
     private TodoCommandFileService? _commandFileService;
+    private ClaudeCompletionWatcher? _completionWatcher;
     private AppSettingsService? _settingsService;
     private DispatcherTimer? _autoSaveTimer;
 
@@ -34,13 +35,15 @@ public partial class App : Application
 
         var fileReader = new TodoFileReader();
         _commandFileService = new TodoCommandFileService();
-        _viewModel = new MainViewModel(fileReader, _commandFileService, _settingsService, appSettings);
+        _completionWatcher = new ClaudeCompletionWatcher();
+        _viewModel = new MainViewModel(fileReader, _commandFileService, _settingsService, appSettings, _completionWatcher);
 
         _autoSaveTimer = new DispatcherTimer { Interval = AutoSaveInterval };
         _autoSaveTimer.Tick += (_, _) =>
         {
             _viewModel.EnqueuePendingChanges();
             _viewModel.SaveSettingsIfDirty();
+            _completionWatcher.PollOnce();
         };
         _autoSaveTimer.Start();
 

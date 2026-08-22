@@ -20,7 +20,10 @@
                         Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
                         Command="{Binding AddChildTodoCommand}" />
                 <Button Content="{x:Static resx:Strings.Button_ConvertToMemoList}"
+                        Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
                         Command="{Binding AddMemoCommand}" />
+                <Button Content="{x:Static resx:Strings.Button_RunClaude}"
+                        Command="{Binding SendToClaudeCommand}" />
             </StackPanel>
             <views:TodoDetailEditor Body="{Binding SelectedMemo.Body}" />
         </DockPanel>
@@ -29,7 +32,10 @@
         <DockPanel Visibility="{Binding IsMemoListOnly, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="{x:Static styles:LayoutConstants.FieldSpacing}">
                 <Button Content="{x:Static resx:Strings.Button_AddTodoList}"
+                        Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
                         Command="{Binding AddChildTodoCommand}" />
+                <Button Content="{x:Static resx:Strings.Button_RunClaude}"
+                        Command="{Binding SendToClaudeCommand}" />
             </StackPanel>
             <views:NoteTabPanel DataContext="{Binding}" />
         </DockPanel>

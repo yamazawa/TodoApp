@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -22,7 +23,14 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 {
     public static IReadOnlyList<TodoStatus> StatusOptions { get; } = Enum.GetValues<TodoStatus>();
 
+    // このタイトルのメモ情報を、Claudeセッションの再開情報(本文=セッションID)として扱う。
+    private const string ClaudeMemoTitle = "Claude";
+
+    // このタイトルのメモ情報へ、送信した命令文を時刻付きで蓄積する。
+    private const string ClaudeHistoryMemoTitle = "Claude履歴";
+
     private readonly TodoCommandFileService _commandFileService;
+    private readonly ClaudeCompletionWatcher _completionWatcher;
 
     public TodoItem Node { get; }
 
@@ -50,12 +58,26 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
             if (ReferenceEquals(Node.SelectedMemo, value))
                 return;
 
+            if (Node.SelectedMemo is { } old)
+                old.PropertyChanged -= OnSelectedMemoPropertyChanged;
+
             Node.SelectedMemo = value;
+
+            if (Node.SelectedMemo is { } updated)
+                updated.PropertyChanged += OnSelectedMemoPropertyChanged;
+
             OnPropertyChanged();
             OnPropertyChanged(nameof(SelectedEntry));
             OnPropertyChanged(nameof(ListEntries));
             NotifyMemoCommands();
         }
+    }
+
+    // 表示中NOTEの本文をClaudeへの命令文として使うため、編集中もボタンの有効/無効を追従させる。
+    private void OnSelectedMemoPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MemoItem.Body) or nameof(MemoItem.Title))
+            SendToClaudeCommand.NotifyCanExecuteChanged();
     }
 
     // リストの表示横幅。nullの場合は内容に合わせて自動サイズにする(TodoFramePanelが解釈する)。
@@ -149,12 +171,17 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         }
     }
 
-    public TodoNodeViewModel(TodoItem node, TodoCommandFileService commandFileService)
+    public TodoNodeViewModel(TodoItem node, TodoCommandFileService commandFileService, ClaudeCompletionWatcher completionWatcher)
     {
         Node = node;
         _commandFileService = commandFileService;
+        _completionWatcher = completionWatcher;
         Node.ChildTodoList.CollectionChanged += OnChildTodoListChanged;
         Node.MemoList.CollectionChanged += OnMemoListChanged;
+
+        if (Node.SelectedMemo is { } memo)
+            memo.PropertyChanged += OnSelectedMemoPropertyChanged;
+
         RebuildChildNode();
     }
 
@@ -163,6 +190,10 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
     {
         Node.ChildTodoList.CollectionChanged -= OnChildTodoListChanged;
         Node.MemoList.CollectionChanged -= OnMemoListChanged;
+
+        if (Node.SelectedMemo is { } memo)
+            memo.PropertyChanged -= OnSelectedMemoPropertyChanged;
+
         ChildNode?.Dispose();
         GC.SuppressFinalize(this);
     }
@@ -205,6 +236,7 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         MoveMemoDownCommand.NotifyCanExecuteChanged();
         ConvertMemoToChildTodoCommand.NotifyCanExecuteChanged();
         OpenMemoCommand.NotifyCanExecuteChanged();
+        SendToClaudeCommand.NotifyCanExecuteChanged();
     }
 
     // 状況①からTODOリストを追加し、状況③へ遷移する。追加項目をすぐ編集できるようタブを合わせる。
@@ -260,6 +292,70 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
 
     // メモ情報リストは最低1件を保持するため、2件以上のときのみ削除できる。
     private bool CanDeleteMemo() => SelectedMemo is not null && Node.MemoList.Count > 1;
+
+    // 表示中NOTEの本文を命令文として、Claudeセッションを新規PowerShellウィンドウで起動する。
+    //
+    // 「Claude」メモ(本文=セッションID)が空なら新規発行し、既にあれば再開する。
+    // 送信内容は「Claude履歴」メモへ時刻付きで蓄積し、未対応なら対応中へ進める。
+    [RelayCommand(CanExecute = nameof(CanSendToClaude))]
+    private void SendToClaude()
+    {
+        if (SelectedMemo is not { } instructionMemo)
+            return;
+
+        if (_commandFileService.TryGetPath(Node) is not { } folderPath)
+            return;
+
+        var instruction = instructionMemo.Body;
+
+        var claudeMemo = GetOrCreateMemo(ClaudeMemoTitle);
+        var isNewSession = string.IsNullOrWhiteSpace(claudeMemo.Body);
+        if (isNewSession)
+            claudeMemo.Body = Guid.NewGuid().ToString();
+
+        AppendHistory(instruction);
+
+        if (Node.Status == TodoStatus.NotStarted)
+            Node.Status = TodoStatus.InProgress;
+
+        _completionWatcher.Watch(Node, folderPath);
+        ClaudeSessionLauncher.Launch(folderPath, claudeMemo.Body, instruction, isNewSession);
+    }
+
+    private bool CanSendToClaude()
+    {
+        if (SelectedMemo is not { } memo)
+            return false;
+
+        if (memo.Title is ClaudeMemoTitle or ClaudeHistoryMemoTitle)
+            return false;
+
+        if (string.IsNullOrWhiteSpace(memo.Body))
+            return false;
+
+        var missingMemoCount = (HasMemo(ClaudeMemoTitle) ? 0 : 1) + (HasMemo(ClaudeHistoryMemoTitle) ? 0 : 1);
+        return Node.MemoList.Count + missingMemoCount <= TodoFileNaming.MaxItemCount;
+    }
+
+    private bool HasMemo(string title) => Node.MemoList.Any(m => m.Title == title);
+
+    private MemoItem GetOrCreateMemo(string title)
+    {
+        if (Node.MemoList.FirstOrDefault(m => m.Title == title) is { } existing)
+            return existing;
+
+        var created = new MemoItem { Title = title };
+        Node.MemoList.Add(created);
+        return created;
+    }
+
+    // 送信した命令文を時刻付きで「Claude履歴」メモの末尾に追記する。
+    private void AppendHistory(string instruction)
+    {
+        var history = GetOrCreateMemo(ClaudeHistoryMemoTitle);
+        var entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm}] {instruction}";
+        history.Body = string.IsNullOrEmpty(history.Body) ? entry : $"{history.Body}\n\n{entry}";
+    }
 
     [RelayCommand(CanExecute = nameof(CanOpenChildTodo))]
     private void OpenChildTodo()
@@ -431,6 +527,6 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
     private void RebuildChildNode()
     {
         ChildNode?.Dispose();
-        ChildNode = SelectedChildTodo is { } child ? new TodoNodeViewModel(child, _commandFileService) : null;
+        ChildNode = SelectedChildTodo is { } child ? new TodoNodeViewModel(child, _commandFileService, _completionWatcher) : null;
     }
 }
