@@ -240,5 +240,14 @@ namespace TodoApp.Resources {
                 return ResourceManager.GetString("Button_ConvertToMemoList", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Claude実行 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Button_RunClaude {
+            get {
+                return ResourceManager.GetString("Button_RunClaude", resourceCulture);
+            }
+        }
     }
 }

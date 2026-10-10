@@ -119,4 +119,7 @@
   <data name="Button_ConvertToMemoList" xml:space="preserve">
     <value>メモ情報をリスト化</value>
   </data>
+  <data name="Button_RunClaude" xml:space="preserve">
+    <value>Claude実行</value>
+  </data>
 </root>

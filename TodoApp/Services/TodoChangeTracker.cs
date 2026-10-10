@@ -93,7 +93,8 @@ public class TodoChangeTracker : IDisposable
             item.SelectedTabIndex,
             item.SelectedChildTodo is null ? null : item.ChildTodoList.IndexOf(item.SelectedChildTodo),
             item.SelectedMemo is null ? null : item.MemoList.IndexOf(item.SelectedMemo),
-            item.ListWidth);
+            item.ListWidth,
+            item.ClaudeWorkingDirectory);
 
         return new NodeSyncTask(item, parent, _rootParentDir, ordinal, item.Title, item.Status, memos, children, saveInfo);
     }
@@ -140,7 +141,7 @@ public class TodoChangeTracker : IDisposable
 
         if (e.PropertyName is nameof(TodoItem.Title) or nameof(TodoItem.Status)
             or nameof(TodoItem.SelectedTabIndex) or nameof(TodoItem.SelectedChildTodo) or nameof(TodoItem.SelectedMemo)
-            or nameof(TodoItem.ListWidth))
+            or nameof(TodoItem.ListWidth) or nameof(TodoItem.ClaudeWorkingDirectory))
             _dirtyNodes.Add(item);
     }
 

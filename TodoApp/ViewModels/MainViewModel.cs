@@ -18,6 +18,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly TodoFileReader _fileReader;
     private readonly TodoCommandFileService _commandFileService;
+    private readonly ClaudeCompletionWatcher _completionWatcher;
     private readonly AppSettingsService _settingsService;
     private TodoChangeTracker _changeTracker;
     private TodoItem _loadedRoot;
@@ -48,10 +49,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private double _windowHeight;
 
-    public MainViewModel(TodoFileReader fileReader, TodoCommandFileService commandFileService, AppSettingsService settingsService, AppSettings settings)
+    public MainViewModel(TodoFileReader fileReader, TodoCommandFileService commandFileService, AppSettingsService settingsService, AppSettings settings, ClaudeCompletionWatcher completionWatcher)
     {
         _fileReader = fileReader;
         _commandFileService = commandFileService;
+        _completionWatcher = completionWatcher;
         _settingsService = settingsService;
         _rootParentDir = settings.RootParentDir;
         _loadedRoot = fileReader.LoadOrCreateRoot(_rootParentDir);
@@ -60,7 +62,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _changeTracker = new TodoChangeTracker(_rootParentDir);
         _changeTracker.Attach(_loadedRoot);
 
-        RootNode = new TodoNodeViewModel(_selectedTodo, _commandFileService);
+        RootNode = new TodoNodeViewModel(_selectedTodo, _commandFileService, _completionWatcher);
         RebuildBreadcrumbs();
 
         _windowWidth = settings.WindowWidth;
@@ -136,7 +138,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     partial void OnSelectedTodoChanged(TodoItem? oldValue, TodoItem newValue)
     {
         RootNode.Dispose();
-        RootNode = new TodoNodeViewModel(newValue, _commandFileService);
+        RootNode = new TodoNodeViewModel(newValue, _commandFileService, _completionWatcher);
         OnPropertyChanged(nameof(RootNode));
         RebuildBreadcrumbs();
     }

@@ -86,6 +86,7 @@ public class TodoFileReader
                 todo.SelectedMemo = todo.MemoList[memoIndex];
 
             todo.ListWidth = info.ListWidth;
+            todo.ClaudeWorkingDirectory = info.ClaudeWorkingDirectory;
         }
         catch (JsonException)
         {

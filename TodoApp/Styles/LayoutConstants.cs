@@ -21,6 +21,8 @@ public static class LayoutConstants
     public static readonly Thickness TabContentMargin = new(4);
     public static readonly Thickness ButtonSpacing = new(0, 0, 8, 0);
 
+    public const double ClaudeWorkingDirectoryTextBoxWidth = 220;
+
     public static readonly GridLength SplitterThickness = new(4);
 
     // ドラッグ操作を終えた位置が、null(自動サイズ)時の横幅とこの範囲内なら
