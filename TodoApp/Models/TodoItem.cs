@@ -35,6 +35,22 @@ public partial class TodoItem : TitledItem
     [ObservableProperty]
     private double? _listWidth;
 
+    // Claude実行時にSet-Locationするフォルダパス。
+    // nullの場合は祖先の設定値を参照する(EffectiveClaudeWorkingDirectory)。
+    [ObservableProperty]
+    private string? _claudeWorkingDirectory;
+
+    // ツリー内での親。AddChildで設定する(保有者の切替は行わない想定)。
+    public TodoItem? Parent { get; private set; }
+
+    /// <summary>
+    /// Claude実行時に使う実効フォルダパス
+    ///
+    /// 自分で未設定なら、親を遡って最初に設定されている値を使う。
+    /// </summary>
+    public string? EffectiveClaudeWorkingDirectory =>
+        string.IsNullOrWhiteSpace(ClaudeWorkingDirectory) ? Parent?.EffectiveClaudeWorkingDirectory : ClaudeWorkingDirectory;
+
     public ObservableCollection<MemoItem> MemoList { get; } = [];
 
     public ObservableCollection<TodoItem> ChildTodoList { get; } = [];
@@ -69,6 +85,7 @@ public partial class TodoItem : TitledItem
     // Moveを呼ぶ再入エラー(ObservableCollectionの制約)を避ける。
     public void AddChild(TodoItem child)
     {
+        child.Parent = this;
         var index = ChildTodoList.TakeWhile(existing => StatusPriority(existing) <= StatusPriority(child)).Count();
         ChildTodoList.Insert(index, child);
     }
