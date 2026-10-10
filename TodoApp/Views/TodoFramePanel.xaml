@@ -23,7 +23,11 @@
                         Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
                         Command="{Binding AddMemoCommand}" />
                 <Button Content="{x:Static resx:Strings.Button_RunClaude}"
+                        Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
                         Command="{Binding SendToClaudeCommand}" />
+                <TextBox Width="{x:Static styles:LayoutConstants.ClaudeWorkingDirectoryTextBoxWidth}"
+                         VerticalContentAlignment="Center"
+                         Text="{Binding ClaudeWorkingDirectory, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
             <views:TodoDetailEditor Body="{Binding SelectedMemo.Body}" />
         </DockPanel>
@@ -35,7 +39,11 @@
                         Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
                         Command="{Binding AddChildTodoCommand}" />
                 <Button Content="{x:Static resx:Strings.Button_RunClaude}"
+                        Margin="{x:Static styles:LayoutConstants.ButtonSpacing}"
                         Command="{Binding SendToClaudeCommand}" />
+                <TextBox Width="{x:Static styles:LayoutConstants.ClaudeWorkingDirectoryTextBoxWidth}"
+                         VerticalContentAlignment="Center"
+                         Text="{Binding ClaudeWorkingDirectory, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
             <views:NoteTabPanel DataContext="{Binding}" />
         </DockPanel>
