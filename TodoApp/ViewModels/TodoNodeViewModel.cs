@@ -94,6 +94,21 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         }
     }
 
+    // Claude実行時にSet-Locationするフォルダパス。
+    // 未入力(null)の場合、SendToClaude実行時に祖先の設定値を参照する(Node.EffectiveClaudeWorkingDirectory)。
+    public string? ClaudeWorkingDirectory
+    {
+        get => Node.ClaudeWorkingDirectory;
+        set
+        {
+            if (Node.ClaudeWorkingDirectory == value)
+                return;
+
+            Node.ClaudeWorkingDirectory = value;
+            OnPropertyChanged();
+        }
+    }
+
     public int SelectedTabIndex
     {
         get => Node.SelectedTabIndex;
@@ -318,8 +333,10 @@ public partial class TodoNodeViewModel : ObservableObject, IDisposable
         if (Node.Status == TodoStatus.NotStarted)
             Node.Status = TodoStatus.InProgress;
 
+        var openPath = Node.EffectiveClaudeWorkingDirectory ?? folderPath;
+
         _completionWatcher.Watch(Node, folderPath);
-        ClaudeSessionLauncher.Launch(folderPath, claudeMemo.Body, instruction, isNewSession);
+        ClaudeSessionLauncher.Launch(openPath, folderPath, claudeMemo.Body, instruction, isNewSession);
     }
 
     private bool CanSendToClaude()
